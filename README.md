@@ -4,7 +4,7 @@ DeployCheck is a lightweight release-readiness and deployment tracking tool for 
 
 ## Current status
 
-Phase 0 is complete: architecture and a minimal Next.js project skeleton. Product workflows, database models, and seed data are planned for later phases. The current page is only a placeholder.
+Phase 1 is complete: the PostgreSQL schema, initial migration, seed data, and tested readiness and transition rules are in place. The current page is still a placeholder. Project and release screens begin in later phases.
 
 ## MVP workflow
 
@@ -25,7 +25,7 @@ The planned request path is:
 Next.js UI -> Server Actions -> services and domain rules -> data access -> Prisma -> PostgreSQL
 ```
 
-Server Actions will handle app-owned forms and mutations. Route Handlers will be added only when an external caller or webhook needs an HTTP endpoint. Zod will validate input at server boundaries. Readiness and lifecycle rules will live outside React components so they can be tested without rendering the UI.
+Server Actions will handle app-owned forms and mutations. Route Handlers will be added only when an external caller or webhook needs an HTTP endpoint. Zod will validate input when forms are introduced. Readiness and transition rules are pure functions outside React components; later server services will call them before saving a status change.
 
 Planned structure as features are implemented:
 
@@ -47,29 +47,41 @@ tests/domain/             Business-rule tests
 - `Project` has many `Release` records; its slug is unique.
 - `Release` belongs to a project and has many `ReleaseItem`, `ReleaseChecklistItem`, and `Deployment` records. Version is unique within a project.
 - `ReleaseItem` tracks an external reference, type, readiness status, and notes.
-- `ReleaseChecklistItem` tracks a required check, completion state, and optional notes.
+- `ReleaseChecklistItem` tracks a required check, completion state, optional notes, and a yes/no `changeRequired` decision for migrations, environment variables, and background jobs.
 - `Deployment` records the time, outcome, and optional notes for a deployment attempt.
 
 ## Core rules
 
-- A release is ready only when all required checks are complete and all included items are ready. The readiness result must list every blocker.
-- A release cannot enter `READY` while blockers remain.
-- The intended path is `DRAFT -> IN_REVIEW -> READY -> DEPLOYING -> DEPLOYED`, with failure and rollback paths handled explicitly.
-- A deployed release requires a deployment timestamp. Deployment attempts belong in history instead of being overwritten.
-- The server enforces transitions; the UI only presents allowed actions.
+- A release is ready only when all five checks exist and are complete, migration/environment/job decisions are recorded, all included items are ready, and rollback notes are present. A release with no tickets can still be ready.
+- The readiness result includes completion counts and specific blockers.
+- The intended path is `DRAFT -> IN_REVIEW -> READY -> DEPLOYING -> DEPLOYED`. Review can return to draft, ready can return to review, deploying can fail, and failed or deployed releases can be rolled back.
+- Entering `READY` or `DEPLOYING` requires current readiness. Entering `DEPLOYED` requires a deployment timestamp.
+- Deployment attempts are separate history records; the seed includes a success and a failure followed by rollback.
 
-These rules and the exact schema will be implemented and tested in Phase 1 and later workflow phases.
+The pure functions and their tests are in `src/lib/domain/releases/` and `tests/domain/`. Server-side mutation enforcement is scheduled for Phase 6.
 
 ## Stack and local setup
 
-The scaffold uses Next.js App Router, TypeScript, Tailwind CSS, and ESLint. PostgreSQL, Prisma, Zod, and focused domain tests will be added when their corresponding features are built. UI primitives from shadcn/ui will be added only where useful.
+The project uses Next.js App Router, TypeScript, Tailwind CSS, PostgreSQL, Prisma 7, ESLint, and Vitest. Zod and UI primitives from shadcn/ui will be added when forms and screens need them.
+
+Start PostgreSQL locally with Docker Desktop:
+
+```powershell
+docker run -d --name deploycheck-phase1-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=deploycheck -p 127.0.0.1:55432:5432 postgres:17-alpine
+```
+
+If that container already exists, use `docker start deploycheck-phase1-postgres`. Then configure and initialize the app:
 
 ```bash
+cp .env.example .env
 npm install
+npm run db:migrate -- --name init
+npm run db:seed
+npm test
 npm run dev
 ```
 
-Open <http://localhost:3000>. No database is required for the Phase 0 placeholder.
+On PowerShell, use `Copy-Item .env.example .env` instead of `cp` if preferred. Open <http://localhost:3000>. The page does not query the database yet. The seed is repeatable and leaves existing records unchanged.
 
 ## Why this shape
 
@@ -77,4 +89,4 @@ Next.js provides the UI and server entry points in one application. PostgreSQL f
 
 ## Next phase
 
-Phase 1 will add the Prisma schema, migration, realistic fictional seed data, pure readiness functions, and tests. Each phase stops for review before the next begins.
+Phase 2 will add the projects page, create-project flow, and project detail page. Each phase stops for review before the next begins.

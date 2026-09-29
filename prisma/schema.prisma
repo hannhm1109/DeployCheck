@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ReleaseStatus {
+  DRAFT
+  IN_REVIEW
+  READY
+  DEPLOYING
+  DEPLOYED
+  FAILED
+  ROLLED_BACK
+}
+
+enum ReleaseItemType {
+  FEATURE
+  BUG
+  HOTFIX
+  INFRASTRUCTURE
+  TECHNICAL
+}
+
+enum ReleaseItemStatus {
+  TODO
+  IN_PROGRESS
+  QA_PENDING
+  READY
+}
+
+enum ChecklistKind {
+  QA_VALIDATED
+  DATABASE_MIGRATION_CHECKED
+  ENVIRONMENT_VARIABLES_CHECKED
+  BACKGROUND_JOBS_CHECKED
+  ROLLBACK_PLAN_DOCUMENTED
+}
+
+enum DeploymentResult {
+  SUCCEEDED
+  FAILED
+  ROLLED_BACK
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  createdAt   DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @db.Timestamptz(3)
+  releases    Release[]
+}
+
+model Release {
+  id                   String                 @id @default(cuid())
+  projectId            String
+  project              Project                @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  version              String
+  title                String
+  description          String?
+  status               ReleaseStatus          @default(DRAFT)
+  targetDeploymentDate DateTime?              @db.Date
+  deployedAt           DateTime?              @db.Timestamptz(3)
+  rollbackNotes        String?
+  createdAt            DateTime               @default(now()) @db.Timestamptz(3)
+  updatedAt            DateTime               @updatedAt @db.Timestamptz(3)
+  items                ReleaseItem[]
+  checklistItems       ReleaseChecklistItem[]
+  deployments          Deployment[]
+
+  @@unique([projectId, version])
+  @@index([status, targetDeploymentDate])
+}
+
+model ReleaseItem {
+  id                String            @id @default(cuid())
+  releaseId         String
+  release           Release           @relation(fields: [releaseId], references: [id], onDelete: Restrict)
+  externalReference String
+  title             String
+  type              ReleaseItemType
+  status            ReleaseItemStatus @default(TODO)
+  notes             String?
+  createdAt         DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime          @updatedAt @db.Timestamptz(3)
+
+  @@unique([releaseId, externalReference])
+}
+
+model ReleaseChecklistItem {
+  id             String        @id @default(cuid())
+  releaseId      String
+  release        Release       @relation(fields: [releaseId], references: [id], onDelete: Restrict)
+  kind           ChecklistKind
+  isComplete     Boolean       @default(false)
+  changeRequired Boolean?
+  notes          String?
+  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
+
+  @@unique([releaseId, kind])
+}
+
+model Deployment {
+  id         String           @id @default(cuid())
+  releaseId  String
+  release    Release          @relation(fields: [releaseId], references: [id], onDelete: Restrict)
+  occurredAt DateTime         @default(now()) @db.Timestamptz(3)
+  result     DeploymentResult
+  notes      String?
+
+  @@index([releaseId, occurredAt])
+}
