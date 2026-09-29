@@ -15,25 +15,37 @@ export type TransitionContext = {
   deployedAt: Date | null;
 };
 
-export function canTransitionReleaseStatus(
+export function getNextReleaseStatuses(current: ReleaseStatus): readonly ReleaseStatus[] {
+  return NEXT_STATUSES[current];
+}
+
+export function getTransitionError(
   current: ReleaseStatus,
   next: ReleaseStatus,
   context: TransitionContext,
-): boolean {
+): string | null {
   if (!NEXT_STATUSES[current].includes(next)) {
-    return false;
+    return "That status change is not allowed from the current state.";
   }
 
   if (
     (next === ReleaseStatus.READY || next === ReleaseStatus.DEPLOYING) &&
     !context.isReady
   ) {
-    return false;
+    return "Resolve all readiness blockers before this transition.";
   }
 
   if (next === ReleaseStatus.DEPLOYED && !context.deployedAt) {
-    return false;
+    return "A deployment timestamp is required before marking a release deployed.";
   }
 
-  return true;
+  return null;
+}
+
+export function canTransitionReleaseStatus(
+  current: ReleaseStatus,
+  next: ReleaseStatus,
+  context: TransitionContext,
+): boolean {
+  return getTransitionError(current, next, context) === null;
 }

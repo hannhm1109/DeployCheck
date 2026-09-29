@@ -10,7 +10,11 @@ import {
   REQUIRED_CHECKS,
   type ReleaseReadinessInput,
 } from "../../src/lib/domain/releases/readiness";
-import { canTransitionReleaseStatus } from "../../src/lib/domain/releases/transitions";
+import {
+  canTransitionReleaseStatus,
+  getNextReleaseStatuses,
+  getTransitionError,
+} from "../../src/lib/domain/releases/transitions";
 
 function readyRelease(): ReleaseReadinessInput {
   return {
@@ -102,11 +106,14 @@ describe("release status transitions", () => {
   it("allows the intended path and rollback after failure", () => {
     for (const [current, next] of [
       [ReleaseStatus.DRAFT, ReleaseStatus.IN_REVIEW],
+      [ReleaseStatus.IN_REVIEW, ReleaseStatus.DRAFT],
       [ReleaseStatus.IN_REVIEW, ReleaseStatus.READY],
+      [ReleaseStatus.READY, ReleaseStatus.IN_REVIEW],
       [ReleaseStatus.READY, ReleaseStatus.DEPLOYING],
       [ReleaseStatus.DEPLOYING, ReleaseStatus.DEPLOYED],
       [ReleaseStatus.DEPLOYING, ReleaseStatus.FAILED],
       [ReleaseStatus.FAILED, ReleaseStatus.ROLLED_BACK],
+      [ReleaseStatus.DEPLOYED, ReleaseStatus.ROLLED_BACK],
     ]) {
       expect(canTransitionReleaseStatus(current, next, validContext)).toBe(true);
     }
@@ -156,5 +163,26 @@ describe("release status transitions", () => {
         { ...validContext, deployedAt: null },
       ),
     ).toBe(false);
+  });
+
+  it("lists only intentional next statuses", () => {
+    expect(getNextReleaseStatuses(ReleaseStatus.IN_REVIEW)).toEqual([
+      ReleaseStatus.DRAFT,
+      ReleaseStatus.READY,
+    ]);
+    expect(getNextReleaseStatuses(ReleaseStatus.ROLLED_BACK)).toEqual([]);
+  });
+
+  it("explains blocked moves", () => {
+    expect(getTransitionError(
+      ReleaseStatus.IN_REVIEW,
+      ReleaseStatus.READY,
+      { isReady: false, deployedAt: null },
+    )).toMatch(/readiness blockers/);
+    expect(getTransitionError(
+      ReleaseStatus.DRAFT,
+      ReleaseStatus.DEPLOYED,
+      validContext,
+    )).toMatch(/not allowed/);
   });
 });

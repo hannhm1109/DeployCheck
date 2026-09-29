@@ -1,17 +1,17 @@
+import { Prisma } from "@/generated/prisma/client";
 import type { ChecklistInput } from "@/lib/validation/checklist";
-import { getDb } from "@/server/db";
 
-export function upsertChecklistItem(releaseId: string, input: ChecklistInput) {
+export function upsertChecklistItem(tx: Prisma.TransactionClient, releaseId: string, input: ChecklistInput) {
   const { kind, ...values } = input;
-  return getDb().releaseChecklistItem.upsert({
+  return tx.releaseChecklistItem.upsert({
     where: { releaseId_kind: { releaseId, kind } },
     create: { releaseId, kind, ...values },
     update: values,
   });
 }
 
-export function updateRollbackPlan(releaseId: string, rollbackNotes: string | null) {
-  return getDb().release.update({
+export function updateRollbackPlan(tx: Prisma.TransactionClient, releaseId: string, rollbackNotes: string | null) {
+  return tx.release.update({
     where: { id: releaseId },
     data: { rollbackNotes },
   });

@@ -25,14 +25,12 @@ export function getReleaseById(id: string) {
       checklistItems: {
         select: { kind: true, isComplete: true, changeRequired: true, notes: true },
       },
+      deployments: {
+        select: { occurredAt: true, result: true, notes: true },
+        orderBy: [{ occurredAt: "desc" }, { id: "desc" }],
+        take: 1,
+      },
     },
-  });
-}
-
-export function getReleaseForContent(id: string) {
-  return getDb().release.findUnique({
-    where: { id },
-    select: { status: true },
   });
 }
 

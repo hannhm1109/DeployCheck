@@ -1,8 +1,11 @@
 import { Prisma } from "@/generated/prisma/client";
-import { canEditReleaseContent } from "@/lib/domain/releases/editability";
 import type { ReleaseItemInput } from "@/lib/validation/release-items";
 import { deleteReleaseItem, insertReleaseItem, updateReleaseItem } from "@/server/data/release-items";
-import { getReleaseForContent } from "@/server/data/releases";
+import {
+  ReleaseWriteLockedError,
+  ReleaseWriteNotFoundError,
+  withEditableRelease,
+} from "@/server/services/release-write";
 
 export class ReleaseItemsLockedError extends Error {
   constructor() {
@@ -22,40 +25,41 @@ export class ReleaseItemReferenceTakenError extends Error {
   }
 }
 
-async function assertEditable(releaseId: string) {
-  const release = await getReleaseForContent(releaseId);
-  if (!release) throw new ReleaseItemNotFoundError();
-  if (!canEditReleaseContent(release.status)) throw new ReleaseItemsLockedError();
-}
-
-function mapDuplicateReference(error: unknown): never {
+function mapItemError(error: unknown): never {
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
     throw new ReleaseItemReferenceTakenError();
   }
+  if (error instanceof ReleaseWriteLockedError) throw new ReleaseItemsLockedError();
+  if (error instanceof ReleaseWriteNotFoundError) throw new ReleaseItemNotFoundError();
   throw error;
 }
 
 export async function addReleaseItem(releaseId: string, input: ReleaseItemInput) {
-  await assertEditable(releaseId);
   try {
-    return await insertReleaseItem(releaseId, input);
+    return await withEditableRelease(releaseId, (tx) => insertReleaseItem(tx, releaseId, input));
   } catch (error) {
-    mapDuplicateReference(error);
+    mapItemError(error);
   }
 }
 
 export async function editReleaseItem(releaseId: string, itemId: string, input: ReleaseItemInput) {
-  await assertEditable(releaseId);
   try {
-    const result = await updateReleaseItem(releaseId, itemId, input);
-    if (result.count === 0) throw new ReleaseItemNotFoundError();
+    await withEditableRelease(releaseId, async (tx) => {
+      const result = await updateReleaseItem(tx, releaseId, itemId, input);
+      if (result.count === 0) throw new ReleaseItemNotFoundError();
+    });
   } catch (error) {
-    mapDuplicateReference(error);
+    mapItemError(error);
   }
 }
 
 export async function removeReleaseItem(releaseId: string, itemId: string) {
-  await assertEditable(releaseId);
-  const result = await deleteReleaseItem(releaseId, itemId);
-  if (result.count === 0) throw new ReleaseItemNotFoundError();
+  try {
+    await withEditableRelease(releaseId, async (tx) => {
+      const result = await deleteReleaseItem(tx, releaseId, itemId);
+      if (result.count === 0) throw new ReleaseItemNotFoundError();
+    });
+  } catch (error) {
+    mapItemError(error);
+  }
 }

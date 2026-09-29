@@ -5,9 +5,10 @@ import { ArrowLeft } from "lucide-react";
 import { ReleaseItems } from "@/features/release-items/release-items";
 import { DeploymentChecklist } from "@/features/releases/deployment-checklist";
 import { ReadinessSummary } from "@/features/releases/readiness-summary";
+import { ReleaseLifecycle } from "@/features/releases/release-lifecycle";
 import { RollbackPlan } from "@/features/releases/rollback-plan";
 import { ReleaseStatusBadge } from "@/features/releases/status-badge";
-import { formatDate } from "@/lib/format-date";
+import { formatDate, formatDateTime } from "@/lib/format-date";
 import { calculateReleaseReadiness } from "@/lib/domain/releases/readiness";
 import { canEditReleaseContent } from "@/lib/domain/releases/editability";
 import { getReleaseById } from "@/server/data/releases";
@@ -62,10 +63,21 @@ export default async function ReleaseDetailPage({
           <h2 className="text-sm font-semibold text-[#263b31]">Release details</h2>
           <dl className="mt-5 space-y-5 text-sm">
             <div><dt className="text-[#74857b]">Target deployment</dt><dd className="mt-1 font-medium text-[#2a3d33]">{release.targetDeploymentDate ? formatDate(release.targetDeploymentDate) : "Not set"}</dd></div>
-            <div><dt className="text-[#74857b]">Deployed</dt><dd className="mt-1 font-medium text-[#2a3d33]">{release.deployedAt ? formatDate(release.deployedAt) : "Not deployed"}</dd></div>
+            <div><dt className="text-[#74857b]">Deployed</dt><dd className="mt-1 font-medium text-[#2a3d33]">{release.deployedAt ? formatDateTime(release.deployedAt) : "Not deployed"}</dd></div>
             <div><dt className="text-[#74857b]">Created</dt><dd className="mt-1 font-medium text-[#2a3d33]">{formatDate(release.createdAt)}</dd></div>
             <div><dt className="text-[#74857b]">Last updated</dt><dd className="mt-1 font-medium text-[#2a3d33]">{formatDate(release.updatedAt)}</dd></div>
           </dl>
+          <ReleaseLifecycle releaseId={release.id} status={release.status} isReady={readiness.isReady} />
+          {release.deployments[0] && (
+            <section aria-labelledby="latest-outcome-heading" className="mt-8 border-t border-[#d9e2dd] pt-6">
+              <h2 id="latest-outcome-heading" className="text-sm font-semibold text-[#263b31]">Latest outcome</h2>
+              <p className="mt-3 text-sm font-medium text-[#2a3d33]">
+                {release.deployments[0].result === "SUCCEEDED" ? "Succeeded" : release.deployments[0].result === "FAILED" ? "Failed" : "Rolled back"}
+              </p>
+              <p className="mt-1 text-xs text-[#74857b]">{formatDateTime(release.deployments[0].occurredAt)}</p>
+              {release.deployments[0].notes && <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-5 text-[#60736a]">{release.deployments[0].notes}</p>}
+            </section>
+          )}
         </aside>
       </div>
     </main>

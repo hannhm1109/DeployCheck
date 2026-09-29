@@ -15,6 +15,7 @@ import {
   ReleaseItemReferenceTakenError,
   ReleaseItemsLockedError,
 } from "@/server/services/release-items";
+import { ReleaseWriteConflictError } from "@/server/services/release-write";
 
 function formValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -50,6 +51,9 @@ function knownErrorState(error: unknown, values: ReleaseItemFormValues): Release
     return { values, errors: { externalReference: error.message } };
   }
   if (error instanceof ReleaseItemNotFoundError || error instanceof ReleaseItemsLockedError) {
+    return { values, errors: {}, message: error.message };
+  }
+  if (error instanceof ReleaseWriteConflictError) {
     return { values, errors: {}, message: error.message };
   }
   return null;
@@ -105,7 +109,7 @@ export async function removeReleaseItemAction(
   try {
     await removeReleaseItem(releaseId, itemId);
   } catch (error) {
-    if (error instanceof ReleaseItemNotFoundError || error instanceof ReleaseItemsLockedError) {
+    if (error instanceof ReleaseItemNotFoundError || error instanceof ReleaseItemsLockedError || error instanceof ReleaseWriteConflictError) {
       return { error: error.message };
     }
     throw error;
