@@ -26,9 +26,9 @@ export function getReleaseById(id: string) {
         select: { kind: true, isComplete: true, changeRequired: true, notes: true },
       },
       deployments: {
-        select: { occurredAt: true, result: true, notes: true },
+        select: { id: true, occurredAt: true, result: true, notes: true },
         orderBy: [{ occurredAt: "desc" }, { id: "desc" }],
-        take: 1,
+        take: 5,
       },
     },
   });

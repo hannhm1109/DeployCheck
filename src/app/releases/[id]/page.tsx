@@ -8,6 +8,7 @@ import { ReadinessSummary } from "@/features/releases/readiness-summary";
 import { ReleaseLifecycle } from "@/features/releases/release-lifecycle";
 import { RollbackPlan } from "@/features/releases/rollback-plan";
 import { ReleaseStatusBadge } from "@/features/releases/status-badge";
+import { DeploymentResultBadge } from "@/features/deployments/deployment-result-badge";
 import { formatDate, formatDateTime } from "@/lib/format-date";
 import { calculateReleaseReadiness } from "@/lib/domain/releases/readiness";
 import { canEditReleaseContent } from "@/lib/domain/releases/editability";
@@ -68,18 +69,22 @@ export default async function ReleaseDetailPage({
             <div><dt className="text-[#74857b]">Last updated</dt><dd className="mt-1 font-medium text-[#2a3d33]">{formatDate(release.updatedAt)}</dd></div>
           </dl>
           <ReleaseLifecycle releaseId={release.id} status={release.status} isReady={readiness.isReady} />
-          {release.deployments[0] && (
-            <section aria-labelledby="latest-outcome-heading" className="mt-8 border-t border-[#d9e2dd] pt-6">
-              <h2 id="latest-outcome-heading" className="text-sm font-semibold text-[#263b31]">Latest outcome</h2>
-              <p className="mt-3 text-sm font-medium text-[#2a3d33]">
-                {release.deployments[0].result === "SUCCEEDED" ? "Succeeded" : release.deployments[0].result === "FAILED" ? "Failed" : "Rolled back"}
-              </p>
-              <p className="mt-1 text-xs text-[#74857b]">{formatDateTime(release.deployments[0].occurredAt)}</p>
-              {release.deployments[0].notes && <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-5 text-[#60736a]">{release.deployments[0].notes}</p>}
-            </section>
-          )}
         </aside>
       </div>
+      <section aria-labelledby="deployment-history-heading" className="mt-12 border-t border-[#d9e2dd] pt-8">
+        <div className="mb-4 flex items-center justify-between gap-4">
+          <h2 id="deployment-history-heading" className="text-lg font-semibold text-[#1b3029]">Deployment history</h2>
+          <Link href={`/deployments?release=${encodeURIComponent(release.id)}`} className="text-sm font-medium text-[#0d6b57] hover:underline">View all</Link>
+        </div>
+        {release.deployments.length ? (
+          <ul className="divide-y divide-[#e2e9e5] border-y border-[#d9e2dd]">
+            {release.deployments.map((entry) => <li key={entry.id} className="flex flex-wrap items-start justify-between gap-3 px-3 py-4 sm:flex-nowrap">
+              <div className="min-w-0"><p className="text-sm font-medium text-[#2a3d33]">{formatDateTime(entry.occurredAt)}</p>{entry.notes && <p className="mt-1 whitespace-pre-wrap break-words text-sm text-[#60736a]">{entry.notes}</p>}</div>
+              <DeploymentResultBadge result={entry.result} />
+            </li>)}
+          </ul>
+        ) : <p className="border-y border-[#d9e2dd] py-8 text-sm text-[#64746e]">No deployment outcomes recorded for this release.</p>}
+      </section>
     </main>
   );
 }

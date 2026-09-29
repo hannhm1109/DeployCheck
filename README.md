@@ -4,7 +4,7 @@ DeployCheck is a lightweight release-readiness and deployment tracking tool for 
 
 ## Current status
 
-Phase 6 is complete: release status changes follow an intentional server-enforced path. Marking a deployment succeeded, failed, or rolled back records a timestamped outcome with optional notes. The dashboard and full deployment-history views belong to Phase 7.
+Phase 7 is complete: the overview shows live project, upcoming-release, ready-to-deploy, and 30-day deployment counts alongside recent releases and outcomes. Deployment history has outcome filters and pagination, and each release shows its five most recent outcomes with a link to its full history.
 
 ## MVP workflow
 
@@ -32,6 +32,8 @@ Release-item actions follow the same path. They normalize external references, e
 Checklist and rollback-plan actions use the same edit guard. The five checklist kinds are stored as separate rows, with a yes/no/undecided change decision for migration, environment, and background-job checks. The readiness view reads persisted checks and tickets, applies the pure domain calculation, and links each blocker to the section that can resolve it.
 
 Lifecycle changes run in a serializable database transaction. The service rechecks current readiness and status, updates the release, and records any deployment outcome atomically. Concurrent-write conflicts are retried. Ticket and checklist writes also lock the parent release in a transaction, so an edit cannot slip across the point where a release becomes ready.
+
+The overview and history pages query PostgreSQL directly from Server Components. Upcoming releases are active releases with a target date today or later (UTC); ready-to-deploy counts only `READY` releases that still pass the domain readiness calculation. The 30-day deployment count is based on outcome timestamps, not release status. History pages show 20 outcomes at a time, newest first.
 
 Planned structure as features are implemented:
 
@@ -93,12 +95,15 @@ npm run test:releases
 npm run test:release-items
 npm run test:checklist
 npm run test:lifecycle
+npm run test:overview
 npm run dev
 ```
 
-On PowerShell, use `Copy-Item .env.example .env` instead of `cp` if preferred. Open <http://localhost:3000> to browse projects and releases. The seed is repeatable and leaves existing records unchanged. The five `test:*` smoke scripts need the local database; each creates and removes temporary records.
+On PowerShell, use `Copy-Item .env.example .env` instead of `cp` if preferred. Open <http://localhost:3000> for the overview. The seed is repeatable and leaves existing records unchanged. The six `test:*` smoke scripts need the local database; each creates and removes temporary records.
 
 To check Phase 6 manually, create a temporary release, start review, and confirm that **Mark ready** stays disabled until the blockers are resolved. Complete checks and the rollback plan, then move through Ready, Deploying, and Deployed with an outcome note. Confirm the status, deployed timestamp, and latest outcome. Record a rollback and confirm its latest outcome. A separate temporary release can exercise the Failed path. Direct jumps such as Draft to Deployed must be rejected by the server.
+
+To check Phase 7 manually, open the overview and compare its counts with the release list and recent outcome rows. Open a release with deployment attempts, then follow **View all** to its filtered history. Switch outcome filters and visit a later page if there are more than 20 outcomes. Empty databases should offer a clear project/release starting point and show no invented deployment data.
 
 ## Why this shape
 
@@ -106,4 +111,4 @@ Next.js provides the UI and server entry points in one application. PostgreSQL f
 
 ## Next phase
 
-Phase 7 will add the dashboard overview, recent releases, and full deployment history. Each phase stops for review before the next begins.
+Phase 8 is final verification and polish. Each phase stops for review before the next begins.

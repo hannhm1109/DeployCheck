@@ -4,17 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
+  { href: "/", label: "Overview" },
   { href: "/projects", label: "Projects" },
   { href: "/releases", label: "Releases" },
+  { href: "/deployments", label: "History" },
 ];
 
 export function AppNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Main navigation" className="flex items-center gap-3 sm:gap-5">
+    <nav aria-label="Main navigation" className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start sm:gap-5">
       {links.map(({ href, label }) => {
-        const active = pathname === href || pathname.startsWith(`${href}/`);
+        const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link
             key={href}

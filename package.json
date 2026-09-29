@@ -14,6 +14,7 @@
     "test:release-items": "tsx scripts/smoke-release-items.ts",
     "test:checklist": "tsx scripts/smoke-checklist.ts",
     "test:lifecycle": "tsx scripts/smoke-lifecycle.ts",
+    "test:overview": "tsx scripts/smoke-overview.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed"
