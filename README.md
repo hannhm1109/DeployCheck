@@ -4,7 +4,7 @@ DeployCheck is a lightweight release-readiness and deployment tracking tool for 
 
 ## Current status
 
-Phase 1 is complete: the PostgreSQL schema, initial migration, seed data, and tested readiness and transition rules are in place. The current page is still a placeholder. Project and release screens begin in later phases.
+Phase 2 is complete: the Projects page, create-project form, and project detail page are usable. Seeded releases appear as read-only summaries on project details. Release creation and detail workflows begin in Phase 3.
 
 ## MVP workflow
 
@@ -25,7 +25,7 @@ The planned request path is:
 Next.js UI -> Server Actions -> services and domain rules -> data access -> Prisma -> PostgreSQL
 ```
 
-Server Actions will handle app-owned forms and mutations. Route Handlers will be added only when an external caller or webhook needs an HTTP endpoint. Zod will validate input when forms are introduced. Readiness and transition rules are pure functions outside React components; later server services will call them before saving a status change.
+The project form calls a Server Action that validates input with Zod, passes it to a project service, and then uses Prisma data access. Duplicate slugs are reported on the form. Route Handlers will be added only when an external caller or webhook needs an HTTP endpoint. Readiness and transition rules are pure functions outside React components; later server services will call them before saving a status change.
 
 Planned structure as features are implemented:
 
@@ -62,7 +62,7 @@ The pure functions and their tests are in `src/lib/domain/releases/` and `tests/
 
 ## Stack and local setup
 
-The project uses Next.js App Router, TypeScript, Tailwind CSS, PostgreSQL, Prisma 7, ESLint, and Vitest. Zod and UI primitives from shadcn/ui will be added when forms and screens need them.
+The project uses Next.js App Router, TypeScript, Tailwind CSS, PostgreSQL, Prisma 7, Zod, Lucide icons, ESLint, and Vitest. The three-field form uses React's `useActionState` for validation feedback without a separate form library.
 
 Start PostgreSQL locally with Docker Desktop:
 
@@ -78,10 +78,11 @@ npm install
 npm run db:migrate -- --name init
 npm run db:seed
 npm test
+npm run test:projects
 npm run dev
 ```
 
-On PowerShell, use `Copy-Item .env.example .env` instead of `cp` if preferred. Open <http://localhost:3000>. The page does not query the database yet. The seed is repeatable and leaves existing records unchanged.
+On PowerShell, use `Copy-Item .env.example .env` instead of `cp` if preferred. Open <http://localhost:3000> to browse projects. The seed is repeatable and leaves existing records unchanged. `npm run test:projects` needs the local database; it creates and removes one temporary project.
 
 ## Why this shape
 
@@ -89,4 +90,4 @@ Next.js provides the UI and server entry points in one application. PostgreSQL f
 
 ## Next phase
 
-Phase 2 will add the projects page, create-project flow, and project detail page. Each phase stops for review before the next begins.
+Phase 3 will add the release list, create-release flow, release detail page, and release metadata. Each phase stops for review before the next begins.
