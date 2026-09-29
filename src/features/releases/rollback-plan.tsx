@@ -13,11 +13,11 @@ function RollbackEditor({ releaseId, notes, onCancel }: { releaseId: string; not
   return (
     <form action={formAction} noValidate className="mt-4">
       <label htmlFor="rollbackNotes" className="sr-only">Rollback plan</label>
-      <textarea id="rollbackNotes" name="rollbackNotes" rows={5} maxLength={2000} defaultValue={state.value} aria-invalid={Boolean(state.error)} className="block w-full resize-y rounded-[6px] border border-[#cbd8d1] bg-white px-3 py-2 text-sm text-[#1d2925] outline-none focus:border-[#0d6b57] focus:ring-2 focus:ring-[#c8e9db]" />
-      {state.error && <p className="mt-2 text-sm text-[#a13e3b]" role="alert">{state.error}</p>}
+      <textarea id="rollbackNotes" name="rollbackNotes" rows={5} maxLength={2000} defaultValue={state.value} aria-invalid={Boolean(state.error)} aria-describedby={state.error ? "rollback-error" : undefined} className="block w-full resize-y rounded-[6px] border border-[#cbd8d1] bg-white px-3 py-2 text-sm text-[#1d2925] outline-none focus:border-[#0d6b57] focus:ring-2 focus:ring-[#c8e9db]" />
+      {state.error && <p id="rollback-error" className="mt-2 text-sm text-[#a13e3b]" role="alert">{state.error}</p>}
       <div className="mt-4 flex justify-end gap-3">
-        <button type="button" onClick={onCancel} className="inline-flex h-9 items-center gap-1.5 px-2 text-sm font-medium text-[#5b6c63] hover:text-[#1d2925]"><X size={15} aria-hidden="true" /> Cancel</button>
-        <button type="submit" disabled={pending} className="inline-flex h-9 min-w-27 items-center justify-center gap-1.5 rounded-[6px] bg-[#0d6b57] px-3 text-sm font-medium text-white hover:bg-[#095442] disabled:cursor-wait disabled:opacity-65">
+        <button type="button" onClick={onCancel} className="inline-flex h-9 items-center gap-1.5 px-2 text-sm font-medium text-[#5b6c63] hover:text-[#1d2925] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57]"><X size={15} aria-hidden="true" /> Cancel</button>
+        <button type="submit" disabled={pending} className="inline-flex h-9 min-w-27 items-center justify-center gap-1.5 rounded-[6px] bg-[#0d6b57] px-3 text-sm font-medium text-white hover:bg-[#095442] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57] disabled:cursor-wait disabled:opacity-65">
           {pending ? <LoaderCircle size={15} className="animate-spin" aria-hidden="true" /> : <Save size={15} aria-hidden="true" />}
           {pending ? "Saving..." : "Save plan"}
         </button>

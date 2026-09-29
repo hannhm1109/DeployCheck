@@ -71,7 +71,7 @@ export function ProjectForm() {
           htmlFor="description"
           className="block text-sm font-semibold text-[#243930]"
         >
-          Description <span className="font-normal text-[#7b8982]">(optional)</span>
+          Description <span className="font-normal text-[#64746e]">(optional)</span>
         </label>
         <textarea
           id="description"

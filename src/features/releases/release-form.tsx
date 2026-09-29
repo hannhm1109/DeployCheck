@@ -63,17 +63,17 @@ export function ReleaseForm({
         {errorFor("title")}
       </div>
       <div className="border-t border-[#e2e9e5] py-5">
-        <label htmlFor="description" className="block text-sm font-semibold text-[#243930]">Description <span className="font-normal text-[#7b8982]">(optional)</span></label>
+        <label htmlFor="description" className="block text-sm font-semibold text-[#243930]">Description <span className="font-normal text-[#64746e]">(optional)</span></label>
         <textarea id="description" name="description" rows={4} maxLength={1000} defaultValue={state.values.description} aria-invalid={Boolean(state.errors.description)} aria-describedby={state.errors.description ? "description-error" : undefined} placeholder="What is included in this release?" className={textareaClassName} />
         {errorFor("description")}
       </div>
       <div className="border-t border-[#e2e9e5] py-5">
-        <label htmlFor="targetDeploymentDate" className="block text-sm font-semibold text-[#243930]">Target deployment date <span className="font-normal text-[#7b8982]">(optional)</span></label>
+        <label htmlFor="targetDeploymentDate" className="block text-sm font-semibold text-[#243930]">Target deployment date <span className="font-normal text-[#64746e]">(optional)</span></label>
         <input id="targetDeploymentDate" name="targetDeploymentDate" type="date" defaultValue={state.values.targetDeploymentDate} aria-invalid={Boolean(state.errors.targetDeploymentDate)} aria-describedby={state.errors.targetDeploymentDate ? "targetDeploymentDate-error" : undefined} className={inputClassName} />
         {errorFor("targetDeploymentDate")}
       </div>
       <div className="border-y border-[#e2e9e5] py-5">
-        <label htmlFor="rollbackNotes" className="block text-sm font-semibold text-[#243930]">Rollback plan <span className="font-normal text-[#7b8982]">(optional)</span></label>
+        <label htmlFor="rollbackNotes" className="block text-sm font-semibold text-[#243930]">Rollback plan <span className="font-normal text-[#64746e]">(optional)</span></label>
         <textarea id="rollbackNotes" name="rollbackNotes" rows={4} maxLength={2000} defaultValue={state.values.rollbackNotes} aria-invalid={Boolean(state.errors.rollbackNotes)} aria-describedby={state.errors.rollbackNotes ? "rollbackNotes-error" : undefined} placeholder="Steps to restore the previous version" className={textareaClassName} />
         {errorFor("rollbackNotes")}
       </div>

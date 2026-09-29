@@ -33,7 +33,7 @@ export function ReadinessSummary({ readiness }: { readiness: Readiness }) {
       </div>
       {readiness.blockers.length > 0 && (
         <div className="mt-6 pl-9">
-          <h3 className="text-xs font-semibold uppercase text-[#697a70]">Blockers</h3>
+          <h3 className="text-xs font-semibold uppercase text-[#64746e]">Blockers</h3>
           <ul className="mt-2 grid gap-x-8 gap-y-2 sm:grid-cols-2">
             {readiness.blockers.map((blocker, index) => (
               <li key={`${blocker.code}-${index}`} className="text-sm leading-5 text-[#4e6157]">

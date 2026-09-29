@@ -72,7 +72,7 @@ export default async function ProjectsPage() {
                   </span>
                   <span className="text-right text-sm tabular-nums text-[#40544b] md:text-left">
                     {project._count.releases}
-                    <span className="ml-1 text-xs text-[#829089] md:hidden">releases</span>
+                    <span className="ml-1 text-xs text-[#64746e] md:hidden">releases</span>
                   </span>
                   <ArrowUpRight
                     size={17}

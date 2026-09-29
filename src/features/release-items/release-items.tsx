@@ -74,7 +74,7 @@ export function ReleaseItems({
     <section id="tickets" aria-labelledby="tickets-heading" className="scroll-mt-6 border-t border-[#e2e9e5] pt-8">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 id="tickets-heading" className="text-lg font-semibold text-[#1b3029]">Tickets <span className="ml-1 text-sm font-normal tabular-nums text-[#697a70]">{items.length}</span></h2>
+          <h2 id="tickets-heading" className="text-lg font-semibold text-[#1b3029]">Tickets <span className="ml-1 text-sm font-normal tabular-nums text-[#64746e]">{items.length}</span></h2>
           <p className="mt-1 text-sm text-[#64746e]">{readiness.readyItems}/{readiness.totalItems} items ready</p>
         </div>
         {editable && (

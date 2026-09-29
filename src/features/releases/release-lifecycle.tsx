@@ -48,12 +48,12 @@ function TransitionControl({
           {needsConfirmation && (
             <>
               <label htmlFor={`notes-${next}`} className="block text-xs font-medium text-[#51665a]">{label} notes <span className="font-normal text-[#809087]">(optional)</span></label>
-              <textarea id={`notes-${next}`} name="notes" rows={3} maxLength={1000} className="block w-full resize-y rounded-[6px] border border-[#cbd8d1] bg-white px-3 py-2 text-sm text-[#1d2925] outline-none focus:border-[#0d6b57] focus:ring-2 focus:ring-[#c8e9db]" />
+              <textarea id={`notes-${next}`} name="notes" rows={3} maxLength={1000} autoFocus className="block w-full resize-y rounded-[6px] border border-[#cbd8d1] bg-white px-3 py-2 text-sm text-[#1d2925] outline-none focus:border-[#0d6b57] focus:ring-2 focus:ring-[#c8e9db]" />
             </>
           )}
           <div className="flex gap-2">
-            {needsConfirmation && <button type="button" onClick={() => setExpanded(false)} title="Cancel" aria-label="Cancel" className="inline-flex size-9 shrink-0 items-center justify-center rounded-[6px] border border-[#cbd8d1] text-[#60736a] hover:bg-[#e8eeeb]"><X size={16} aria-hidden="true" /></button>}
-            <button type="submit" disabled={pending || blocked} title={blocked ? "Resolve readiness blockers first" : undefined} className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[6px] border border-[#cbd8d1] bg-white px-3 text-sm font-medium text-[#1c4033] hover:border-[#0d6b57] focus-visible:outline-2 focus-visible:outline-[#0d6b57] disabled:cursor-not-allowed disabled:opacity-50">
+            {needsConfirmation && <button type="button" onClick={() => setExpanded(false)} title="Cancel" aria-label="Cancel" className="inline-flex size-9 shrink-0 items-center justify-center rounded-[6px] border border-[#cbd8d1] text-[#60736a] hover:bg-[#e8eeeb] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57]"><X size={16} aria-hidden="true" /></button>}
+            <button type="submit" disabled={pending || blocked} title={blocked ? "Resolve readiness blockers first" : undefined} className="inline-flex h-9 w-full items-center justify-center gap-2 rounded-[6px] border border-[#cbd8d1] bg-white px-3 text-sm font-medium text-[#1c4033] hover:border-[#0d6b57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57] disabled:cursor-not-allowed disabled:opacity-50">
               {pending ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : <Icon size={16} aria-hidden="true" />}
               {pending ? "Saving..." : needsConfirmation ? "Confirm" : label}
             </button>
@@ -77,10 +77,10 @@ export function ReleaseLifecycle({
   const nextStatuses = getNextReleaseStatuses(status);
 
   return (
-    <section id="lifecycle" aria-labelledby="lifecycle-heading" className="mt-8 scroll-mt-6 border-t border-[#d9e2dd] pt-6">
+    <section id="lifecycle" aria-labelledby="lifecycle-heading" className="scroll-mt-6 border-b border-[#d9e2dd] pb-6">
       <h2 id="lifecycle-heading" className="text-sm font-semibold text-[#263b31]">Lifecycle</h2>
       {nextStatuses.length === 0 ? (
-        <p className="mt-4 text-sm text-[#74857b]">No further status changes.</p>
+        <p className="mt-4 text-sm text-[#64746e]">No further status changes.</p>
       ) : (
         <div className="mt-4 space-y-3">
           {nextStatuses.map((next) => (

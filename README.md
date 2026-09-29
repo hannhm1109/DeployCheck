@@ -4,7 +4,7 @@ DeployCheck is a lightweight release-readiness and deployment tracking tool for 
 
 ## Current status
 
-Phase 7 is complete: the overview shows live project, upcoming-release, ready-to-deploy, and 30-day deployment counts alongside recent releases and outcomes. Deployment history has outcome filters and pagination, and each release shows its five most recent outcomes with a link to its full history.
+Phase 8 is complete: the overview shows live project, upcoming-release, ready-to-deploy, and 30-day deployment counts alongside recent releases and outcomes. Deployment history has outcome filters and pagination, and each release shows its five most recent outcomes with a link to its full history. The app now has route loading and recovery screens, improved mobile release actions, clearer form errors, and validation boundary tests.
 
 ## MVP workflow
 
@@ -105,10 +105,12 @@ To check Phase 6 manually, create a temporary release, start review, and confirm
 
 To check Phase 7 manually, open the overview and compare its counts with the release list and recent outcome rows. Open a release with deployment attempts, then follow **View all** to its filtered history. Switch outcome filters and visit a later page if there are more than 20 outcomes. Empty databases should offer a clear project/release starting point and show no invented deployment data.
 
+To check Phase 8 manually, open a ready release on a narrow screen: lifecycle actions should appear immediately after the readiness summary, with no horizontal scrolling. Submit an invalid project, release, ticket, or checklist form and confirm the field-level error is visible and announced. Navigate between pages on a slow connection to see loading feedback. If a database query fails, the page should offer **Retry** rather than a blank screen.
+
 ## Why this shape
 
 Next.js provides the UI and server entry points in one application. PostgreSQL fits the related projects, releases, tickets, checks, and deployment history. Prisma will make those relationships and migrations explicit. A small service/domain layer keeps readiness and status rules consistent across screens and future integrations without introducing a full enterprise architecture.
 
 ## Next phase
 
-Phase 8 is final verification and polish. Each phase stops for review before the next begins.
+Phase 9 will prepare production deployment. Each phase stops for review before the next begins.

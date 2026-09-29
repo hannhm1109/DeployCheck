@@ -53,7 +53,7 @@ export default async function Home() {
           <div className="mb-4 flex items-center justify-between gap-4"><h2 id="recent-deployments-heading" className="text-lg font-semibold text-[#1b3029]">Recent deployments</h2><Link href="/deployments" className="text-sm font-medium text-[#0d6b57] hover:underline">View history</Link></div>
           {overview.recentDeployments.length ? (
             <ul className="divide-y divide-[#e2e9e5] border-y border-[#d9e2dd]">{overview.recentDeployments.map((deployment) => <li key={deployment.id}><Link href={`/releases/${deployment.release.id}`} className="flex min-h-20 items-center justify-between gap-3 px-3 py-3 hover:bg-white focus-visible:outline-2 focus-visible:outline-[#0f7663]"><span className="min-w-0"><span className="block truncate font-mono text-sm font-semibold text-[#1c4033]">{deployment.release.version}</span><span className="mt-1 block truncate text-xs text-[#64746e]">{deployment.release.project.name} / {formatDateTime(deployment.occurredAt)}</span></span><DeploymentResultBadge result={deployment.result} /></Link></li>)}</ul>
-          ) : <div className="border-y border-[#d9e2dd] py-10"><p className="text-sm text-[#64746e]">No deployments recorded yet.</p><p className="mt-2 text-xs text-[#74857b]">Outcomes appear here when a release is deployed, fails, or is rolled back.</p></div>}
+          ) : <div className="border-y border-[#d9e2dd] py-10"><p className="text-sm text-[#64746e]">No deployments recorded yet.</p><p className="mt-2 text-xs text-[#64746e]">Outcomes appear here when a release is deployed, fails, or is rolled back.</p></div>}
         </section>
       </div>
     </main>

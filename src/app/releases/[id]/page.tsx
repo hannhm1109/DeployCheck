@@ -41,7 +41,7 @@ export default async function ReleaseDetailPage({
       </header>
       <ReadinessSummary readiness={readiness} />
       <div className="grid gap-10 pt-8 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-12">
-        <div className="min-w-0 space-y-9">
+        <div className="order-last min-w-0 space-y-9 lg:order-first">
           <section aria-labelledby="description-heading">
             <h2 id="description-heading" className="text-lg font-semibold text-[#1b3029]">Description</h2>
             <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-[#4e6157]">{release.description || "No description added."}</p>
@@ -60,15 +60,15 @@ export default async function ReleaseDetailPage({
           />
           <RollbackPlan releaseId={release.id} notes={release.rollbackNotes} editable={editable} />
         </div>
-        <aside className="border-t border-[#d9e2dd] pt-6 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
-          <h2 className="text-sm font-semibold text-[#263b31]">Release details</h2>
-          <dl className="mt-5 space-y-5 text-sm">
-            <div><dt className="text-[#74857b]">Target deployment</dt><dd className="mt-1 font-medium text-[#2a3d33]">{release.targetDeploymentDate ? formatDate(release.targetDeploymentDate) : "Not set"}</dd></div>
-            <div><dt className="text-[#74857b]">Deployed</dt><dd className="mt-1 font-medium text-[#2a3d33]">{release.deployedAt ? formatDateTime(release.deployedAt) : "Not deployed"}</dd></div>
-            <div><dt className="text-[#74857b]">Created</dt><dd className="mt-1 font-medium text-[#2a3d33]">{formatDate(release.createdAt)}</dd></div>
-            <div><dt className="text-[#74857b]">Last updated</dt><dd className="mt-1 font-medium text-[#2a3d33]">{formatDate(release.updatedAt)}</dd></div>
-          </dl>
+        <aside className="order-first lg:order-last lg:border-l lg:pl-8">
           <ReleaseLifecycle releaseId={release.id} status={release.status} isReady={readiness.isReady} />
+          <h2 className="mt-6 text-sm font-semibold text-[#263b31]">Release details</h2>
+          <dl className="mt-5 space-y-5 text-sm">
+            <div><dt className="text-[#64746e]">Target deployment</dt><dd className="mt-1 font-medium text-[#2a3d33]">{release.targetDeploymentDate ? formatDate(release.targetDeploymentDate) : "Not set"}</dd></div>
+            <div><dt className="text-[#64746e]">Deployed</dt><dd className="mt-1 font-medium text-[#2a3d33]">{release.deployedAt ? formatDateTime(release.deployedAt) : "Not deployed"}</dd></div>
+            <div><dt className="text-[#64746e]">Created</dt><dd className="mt-1 font-medium text-[#2a3d33]">{formatDate(release.createdAt)}</dd></div>
+            <div><dt className="text-[#64746e]">Last updated</dt><dd className="mt-1 font-medium text-[#2a3d33]">{formatDate(release.updatedAt)}</dd></div>
+          </dl>
         </aside>
       </div>
       <section aria-labelledby="deployment-history-heading" className="mt-12 border-t border-[#d9e2dd] pt-8">

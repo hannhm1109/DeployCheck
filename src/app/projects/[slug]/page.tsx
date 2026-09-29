@@ -44,7 +44,7 @@ export default async function ProjectDetailPage({
         <section aria-labelledby="releases-heading" className="min-w-0">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <h2 id="releases-heading" className="text-lg font-semibold text-[#1b3029]">
-              Releases <span className="ml-1 text-sm font-normal tabular-nums text-[#697a70]">{project.releases.length}</span>
+              Releases <span className="ml-1 text-sm font-normal tabular-nums text-[#64746e]">{project.releases.length}</span>
             </h2>
             <Link href={`/releases/new?project=${encodeURIComponent(project.slug)}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d6b57] hover:underline">
               <Plus size={16} aria-hidden="true" /> New release
@@ -82,13 +82,13 @@ export default async function ProjectDetailPage({
           <h2 className="text-sm font-semibold text-[#263b31]">Project details</h2>
           <dl className="mt-5 space-y-5 text-sm">
             <div>
-              <dt className="text-[#74857b]">Created</dt>
+              <dt className="text-[#64746e]">Created</dt>
               <dd className="mt-1 font-medium text-[#2a3d33]">
                 {formatDate(project.createdAt)}
               </dd>
             </div>
             <div>
-              <dt className="text-[#74857b]">Last updated</dt>
+              <dt className="text-[#64746e]">Last updated</dt>
               <dd className="mt-1 font-medium text-[#2a3d33]">
                 {formatDate(project.updatedAt)}
               </dd>
