@@ -95,6 +95,7 @@ export function ProjectForm() {
         )}
       </div>
       <div className="flex flex-wrap items-center justify-end gap-4 pt-6">
+        {state.message && <p className="w-full text-sm text-[#a13e3b]" role="alert">{state.message}</p>}
         <Link
           href="/projects"
           className="inline-flex h-10 items-center px-2 text-sm font-medium text-[#5b6c63] hover:text-[#1d2925] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f7663]"

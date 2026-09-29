@@ -24,4 +24,5 @@ export type ProjectFormValues = {
 export type ProjectFormState = {
   values: ProjectFormValues;
   errors: Partial<Record<keyof ProjectFormValues, string>>;
+  message?: string;
 };

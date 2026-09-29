@@ -3,6 +3,7 @@ import { REQUIRED_CHECKS } from "@/lib/domain/releases/readiness";
 import type { CreateReleaseInput } from "@/lib/validation/releases";
 import { getProjectForRelease } from "@/server/data/projects";
 import { insertRelease } from "@/server/data/releases";
+import { assertDemoWritable } from "@/server/demo-access";
 
 export class ReleaseVersionTakenError extends Error {
   constructor() {
@@ -17,6 +18,7 @@ export class ReleaseProjectNotFoundError extends Error {
 }
 
 export async function createRelease(input: CreateReleaseInput) {
+  assertDemoWritable();
   const project = await getProjectForRelease(input.projectId);
   if (!project) throw new ReleaseProjectNotFoundError();
 

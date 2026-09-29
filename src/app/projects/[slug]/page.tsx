@@ -5,6 +5,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { ReleaseStatusBadge } from "@/features/releases/status-badge";
 import { formatDate } from "@/lib/format-date";
 import { getProjectBySlug } from "@/server/data/projects";
+import { isReadOnlyDemo } from "@/server/demo-access";
 
 export default async function ProjectDetailPage({
   params,
@@ -15,6 +16,7 @@ export default async function ProjectDetailPage({
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
+  const readOnly = isReadOnlyDemo();
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
@@ -46,9 +48,9 @@ export default async function ProjectDetailPage({
             <h2 id="releases-heading" className="text-lg font-semibold text-[#1b3029]">
               Releases <span className="ml-1 text-sm font-normal tabular-nums text-[#64746e]">{project.releases.length}</span>
             </h2>
-            <Link href={`/releases/new?project=${encodeURIComponent(project.slug)}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d6b57] hover:underline">
+            {!readOnly && <Link href={`/releases/new?project=${encodeURIComponent(project.slug)}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d6b57] hover:underline">
               <Plus size={16} aria-hidden="true" /> New release
-            </Link>
+            </Link>}
           </div>
           {project.releases.length === 0 ? (
             <div className="border-y border-[#d9e2dd] py-12 text-sm text-[#6b7d72]">

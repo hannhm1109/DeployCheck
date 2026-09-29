@@ -13,6 +13,7 @@ import { formatDate, formatDateTime } from "@/lib/format-date";
 import { calculateReleaseReadiness } from "@/lib/domain/releases/readiness";
 import { canEditReleaseContent } from "@/lib/domain/releases/editability";
 import { getReleaseById } from "@/server/data/releases";
+import { isReadOnlyDemo } from "@/server/demo-access";
 
 export default async function ReleaseDetailPage({
   params,
@@ -24,7 +25,8 @@ export default async function ReleaseDetailPage({
   const release = await getReleaseById(id);
   if (!release) notFound();
   const readiness = calculateReleaseReadiness(release);
-  const editable = canEditReleaseContent(release.status);
+  const readOnly = isReadOnlyDemo();
+  const editable = !readOnly && canEditReleaseContent(release.status);
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
@@ -61,8 +63,8 @@ export default async function ReleaseDetailPage({
           <RollbackPlan releaseId={release.id} notes={release.rollbackNotes} editable={editable} />
         </div>
         <aside className="order-first lg:order-last lg:border-l lg:pl-8">
-          <ReleaseLifecycle releaseId={release.id} status={release.status} isReady={readiness.isReady} />
-          <h2 className="mt-6 text-sm font-semibold text-[#263b31]">Release details</h2>
+          {!readOnly && <ReleaseLifecycle releaseId={release.id} status={release.status} isReady={readiness.isReady} />}
+          <h2 className={`${readOnly ? "" : "mt-6"} text-sm font-semibold text-[#263b31]`}>Release details</h2>
           <dl className="mt-5 space-y-5 text-sm">
             <div><dt className="text-[#64746e]">Target deployment</dt><dd className="mt-1 font-medium text-[#2a3d33]">{release.targetDeploymentDate ? formatDate(release.targetDeploymentDate) : "Not set"}</dd></div>
             <div><dt className="text-[#64746e]">Deployed</dt><dd className="mt-1 font-medium text-[#2a3d33]">{release.deployedAt ? formatDateTime(release.deployedAt) : "Not deployed"}</dd></div>

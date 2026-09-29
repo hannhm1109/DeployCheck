@@ -5,10 +5,12 @@ import { DeploymentResultBadge } from "@/features/deployments/deployment-result-
 import { ReleaseStatusBadge } from "@/features/releases/status-badge";
 import { formatDate, formatDateTime } from "@/lib/format-date";
 import { getOverview } from "@/server/data/overview";
+import { isReadOnlyDemo } from "@/server/demo-access";
 
 export default async function Home() {
   await connection();
   const overview = await getOverview();
+  const readOnly = isReadOnlyDemo();
   const metrics = [
     { label: "Projects", value: overview.projectCount, href: "/projects" },
     { label: "Upcoming releases", value: overview.upcomingCount, href: "/releases" },
@@ -23,7 +25,7 @@ export default async function Home() {
           <h1 className="text-[30px] font-semibold leading-tight text-[#152923]">Overview</h1>
           <p className="mt-2 text-sm text-[#64746e]">Release activity across your projects</p>
         </div>
-        <Link href={overview.projectCount ? "/releases/new" : "/projects/new"} className="inline-flex h-10 items-center gap-2 rounded-[6px] bg-[#0d6b57] px-4 text-sm font-medium text-white hover:bg-[#095442] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57]"><Plus size={16} aria-hidden="true" />{overview.projectCount ? "New release" : "New project"}</Link>
+        {!readOnly && <Link href={overview.projectCount ? "/releases/new" : "/projects/new"} className="inline-flex h-10 items-center gap-2 rounded-[6px] bg-[#0d6b57] px-4 text-sm font-medium text-white hover:bg-[#095442] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57]"><Plus size={16} aria-hidden="true" />{overview.projectCount ? "New release" : "New project"}</Link>}
       </div>
       <section aria-label="Overview counts" className="grid grid-cols-2 border-y border-[#d9e2dd] lg:grid-cols-4">
         {metrics.map((metric) => (
@@ -47,7 +49,7 @@ export default async function Home() {
                 </Link>
               </li>)}
             </ul>
-          ) : <div className="border-y border-[#d9e2dd] py-10"><p className="text-sm text-[#64746e]">No releases yet.</p><Link href={overview.projectCount ? "/releases/new" : "/projects/new"} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#0d6b57] hover:underline">{overview.projectCount ? "Create a release" : "Create a project first"} <ArrowUpRight size={15} aria-hidden="true" /></Link></div>}
+          ) : <div className="border-y border-[#d9e2dd] py-10"><p className="text-sm text-[#64746e]">No releases yet.</p>{!readOnly && <Link href={overview.projectCount ? "/releases/new" : "/projects/new"} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#0d6b57] hover:underline">{overview.projectCount ? "Create a release" : "Create a project first"} <ArrowUpRight size={15} aria-hidden="true" /></Link>}</div>}
         </section>
         <section aria-labelledby="recent-deployments-heading" className="min-w-0">
           <div className="mb-4 flex items-center justify-between gap-4"><h2 id="recent-deployments-heading" className="text-lg font-semibold text-[#1b3029]">Recent deployments</h2><Link href="/deployments" className="text-sm font-medium text-[#0d6b57] hover:underline">View history</Link></div>

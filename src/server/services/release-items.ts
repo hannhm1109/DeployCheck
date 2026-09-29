@@ -1,6 +1,7 @@
 import { Prisma } from "@/generated/prisma/client";
 import type { ReleaseItemInput } from "@/lib/validation/release-items";
 import { deleteReleaseItem, insertReleaseItem, updateReleaseItem } from "@/server/data/release-items";
+import { assertDemoWritable } from "@/server/demo-access";
 import {
   ReleaseWriteLockedError,
   ReleaseWriteNotFoundError,
@@ -35,6 +36,7 @@ function mapItemError(error: unknown): never {
 }
 
 export async function addReleaseItem(releaseId: string, input: ReleaseItemInput) {
+  assertDemoWritable();
   try {
     return await withEditableRelease(releaseId, (tx) => insertReleaseItem(tx, releaseId, input));
   } catch (error) {
@@ -43,6 +45,7 @@ export async function addReleaseItem(releaseId: string, input: ReleaseItemInput)
 }
 
 export async function editReleaseItem(releaseId: string, itemId: string, input: ReleaseItemInput) {
+  assertDemoWritable();
   try {
     await withEditableRelease(releaseId, async (tx) => {
       const result = await updateReleaseItem(tx, releaseId, itemId, input);
@@ -54,6 +57,7 @@ export async function editReleaseItem(releaseId: string, itemId: string, input: 
 }
 
 export async function removeReleaseItem(releaseId: string, itemId: string) {
+  assertDemoWritable();
   try {
     await withEditableRelease(releaseId, async (tx) => {
       const result = await deleteReleaseItem(tx, releaseId, itemId);

@@ -9,6 +9,7 @@ import {
   transitionReleaseStatus,
 } from "@/server/services/lifecycle";
 import { ReleaseWriteConflictError } from "@/server/services/release-write";
+import { ReadOnlyDemoError } from "@/server/demo-access";
 
 export async function transitionReleaseAction(
   releaseId: string,
@@ -30,7 +31,7 @@ export async function transitionReleaseAction(
     const result = await transitionReleaseStatus(releaseId, parsed.data);
     projectSlug = result.projectSlug;
   } catch (error) {
-    if (error instanceof ReleaseTransitionNotFoundError || error instanceof ReleaseTransitionRejectedError || error instanceof ReleaseWriteConflictError) {
+    if (error instanceof ReadOnlyDemoError || error instanceof ReleaseTransitionNotFoundError || error instanceof ReleaseTransitionRejectedError || error instanceof ReleaseWriteConflictError) {
       return { error: error.message };
     }
     throw error;

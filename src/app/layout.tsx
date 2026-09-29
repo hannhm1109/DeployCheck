@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Blocks } from "lucide-react";
 import { AppNav } from "@/components/layout/app-nav";
+import { isReadOnlyDemo } from "@/server/demo-access";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <Blocks size={18} strokeWidth={2} aria-hidden="true" />
               </span>
               <span>DeployCheck</span>
+              {isReadOnlyDemo() && <span className="rounded-[4px] bg-[#e8eeeb] px-2 py-1 text-xs font-medium text-[#40544b]">Read-only demo</span>}
             </Link>
             <AppNav />
           </div>

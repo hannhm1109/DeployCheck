@@ -17,6 +17,7 @@ import {
   saveRollbackPlan,
 } from "@/server/services/checklist";
 import { ReleaseWriteConflictError } from "@/server/services/release-write";
+import { ReadOnlyDemoError } from "@/server/demo-access";
 
 function formValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -57,7 +58,7 @@ export async function saveChecklistItemAction(
   try {
     await saveChecklistItem(releaseId, parsed.data);
   } catch (error) {
-    if (error instanceof ChecklistLockedError || error instanceof ChecklistReleaseNotFoundError || error instanceof ReleaseWriteConflictError) {
+    if (error instanceof ReadOnlyDemoError || error instanceof ChecklistLockedError || error instanceof ChecklistReleaseNotFoundError || error instanceof ReleaseWriteConflictError) {
       return { values, errors: {}, message: error.message };
     }
     throw error;
@@ -79,7 +80,7 @@ export async function saveRollbackPlanAction(
   try {
     await saveRollbackPlan(releaseId, parsed.data);
   } catch (error) {
-    if (error instanceof ChecklistLockedError || error instanceof ChecklistReleaseNotFoundError || error instanceof ReleaseWriteConflictError) {
+    if (error instanceof ReadOnlyDemoError || error instanceof ChecklistLockedError || error instanceof ChecklistReleaseNotFoundError || error instanceof ReleaseWriteConflictError) {
       return { value, error: error.message };
     }
     throw error;

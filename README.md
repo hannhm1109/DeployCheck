@@ -4,7 +4,7 @@ DeployCheck is a lightweight release-readiness and deployment tracking tool for 
 
 ## Current status
 
-Phase 8 is complete: the overview shows live project, upcoming-release, ready-to-deploy, and 30-day deployment counts alongside recent releases and outcomes. Deployment history has outcome filters and pagination, and each release shows its five most recent outcomes with a link to its full history. The app now has route loading and recovery screens, improved mobile release actions, clearer form errors, and validation boundary tests.
+Phase 9 deployment preparation is complete. The app is ready for a managed PostgreSQL database and a Vercel project, but no live deployment exists until those external resources are connected. Public production builds are read-only by default because authentication is outside this MVP. See the [deployment guide](docs/deployment.md).
 
 ## MVP workflow
 
@@ -76,6 +76,8 @@ The project uses Next.js App Router, TypeScript, Tailwind CSS, PostgreSQL, Prism
 
 Development and production builds use separate ignored output directories (`.next-dev` and `.next-build`) so they do not contend for generated files on synced Windows workspaces.
 
+Hosted runtime queries use `DATABASE_URL`, preferably a pooled PostgreSQL connection string. Prisma CLI commands use `DIRECT_URL` when provided, so migrations can use a direct connection. `npm run db:deploy` applies committed migrations in a deployment environment; seeding is a separate, deliberate step. On Vercel, the build uses the standard `.next` directory.
+
 Start PostgreSQL locally with Docker Desktop:
 
 ```powershell
@@ -89,6 +91,7 @@ cp .env.example .env
 npm install
 npm run db:migrate -- --name init
 npm run db:seed
+npm run db:status
 npm test
 npm run test:projects
 npm run test:releases
@@ -107,10 +110,12 @@ To check Phase 7 manually, open the overview and compare its counts with the rel
 
 To check Phase 8 manually, open a ready release on a narrow screen: lifecycle actions should appear immediately after the readiness summary, with no horizontal scrolling. Submit an invalid project, release, ticket, or checklist form and confirm the field-level error is visible and announced. Navigate between pages on a slow connection to see loading feedback. If a database query fails, the page should offer **Retry** rather than a blank screen.
 
+For Phase 9, follow [docs/deployment.md](docs/deployment.md). Verify the production read-only state and the seeded overview after connecting the managed database. Local development remains writable.
+
 ## Why this shape
 
 Next.js provides the UI and server entry points in one application. PostgreSQL fits the related projects, releases, tickets, checks, and deployment history. Prisma will make those relationships and migrations explicit. A small service/domain layer keeps readiness and status rules consistent across screens and future integrations without introducing a full enterprise architecture.
 
 ## Next phase
 
-Phase 9 will prepare production deployment. Each phase stops for review before the next begins.
+Phase 10 is portfolio preparation. Each phase stops for review before the next begins.

@@ -44,6 +44,18 @@ type SeedRelease = {
   deployments: SeedDeployment[];
 };
 
+const seedToday = new Date();
+
+function seedDate(daysFromToday: number, hour = 0, minute = 0): Date {
+  return new Date(Date.UTC(
+    seedToday.getUTCFullYear(),
+    seedToday.getUTCMonth(),
+    seedToday.getUTCDate() + daysFromToday,
+    hour,
+    minute,
+  ));
+}
+
 const completedChecks: SeedCheck[] = [
   { kind: ChecklistKind.QA_VALIDATED, isComplete: true, changeRequired: null },
   {
@@ -75,7 +87,7 @@ const releases: SeedRelease[] = [
     title: "Checkout reliability",
     description: "Payment and catalog fixes for the autumn release.",
     status: ReleaseStatus.IN_REVIEW,
-    targetDeploymentDate: new Date("2026-10-03T00:00:00.000Z"),
+    targetDeploymentDate: seedDate(4),
     deployedAt: null,
     rollbackNotes: "Redeploy v3.3.5 and disable the new checkout flag.",
     items: [
@@ -115,8 +127,8 @@ const releases: SeedRelease[] = [
     title: "Order confirmation fixes",
     description: "Stabilizes confirmation emails and order totals.",
     status: ReleaseStatus.DEPLOYED,
-    targetDeploymentDate: new Date("2026-09-18T00:00:00.000Z"),
-    deployedAt: new Date("2026-09-18T14:20:00.000Z"),
+    targetDeploymentDate: seedDate(-11),
+    deployedAt: seedDate(-11, 14, 20),
     rollbackNotes: "Redeploy v3.3.4 and reprocess queued confirmation emails.",
     items: [
       {
@@ -130,7 +142,7 @@ const releases: SeedRelease[] = [
     deployments: [
       {
         id: "seed-northstar-v335-deployment",
-        occurredAt: new Date("2026-09-18T14:20:00.000Z"),
+        occurredAt: seedDate(-11, 14, 20),
         result: DeploymentResult.SUCCEEDED,
         notes: "Production smoke checks passed.",
       },
@@ -142,7 +154,7 @@ const releases: SeedRelease[] = [
     title: "API request limits",
     description: "Adds per-client limits and request tracing.",
     status: ReleaseStatus.READY,
-    targetDeploymentDate: new Date("2026-10-05T00:00:00.000Z"),
+    targetDeploymentDate: seedDate(6),
     deployedAt: null,
     rollbackNotes: "Restore v1.9.1 and turn off the rate-limit flag.",
     items: [
@@ -172,7 +184,7 @@ const releases: SeedRelease[] = [
     title: "Queue worker update",
     description: "A worker change that was rolled back after deployment failed.",
     status: ReleaseStatus.ROLLED_BACK,
-    targetDeploymentDate: new Date("2026-09-11T00:00:00.000Z"),
+    targetDeploymentDate: seedDate(-18),
     deployedAt: null,
     rollbackNotes: "Restore the previous worker image and drain the retry queue.",
     items: [
@@ -187,13 +199,13 @@ const releases: SeedRelease[] = [
     deployments: [
       {
         id: "seed-harbor-v192-failure",
-        occurredAt: new Date("2026-09-11T10:15:00.000Z"),
+        occurredAt: seedDate(-18, 10, 15),
         result: DeploymentResult.FAILED,
         notes: "Worker health checks failed after rollout.",
       },
       {
         id: "seed-harbor-v192-rollback",
-        occurredAt: new Date("2026-09-11T10:32:00.000Z"),
+        occurredAt: seedDate(-18, 10, 32),
         result: DeploymentResult.ROLLED_BACK,
         notes: "Previous worker image restored.",
       },

@@ -8,6 +8,7 @@ import {
   updateReleaseStatus,
 } from "@/server/data/lifecycle";
 import { runSerializableTransaction } from "@/server/services/release-write";
+import { assertDemoWritable } from "@/server/demo-access";
 
 export class ReleaseTransitionNotFoundError extends Error {
   constructor() {
@@ -24,6 +25,7 @@ const outcomeForStatus: Partial<Record<ReleaseStatus, DeploymentResult>> = {
 };
 
 export async function transitionReleaseStatus(releaseId: string, input: TransitionInput) {
+  assertDemoWritable();
   return runSerializableTransaction(async (tx) => {
     const release = await getReleaseForTransition(tx, releaseId);
     if (!release) throw new ReleaseTransitionNotFoundError();

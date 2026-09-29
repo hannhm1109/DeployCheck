@@ -17,6 +17,8 @@
     "test:overview": "tsx scripts/smoke-overview.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:status": "prisma migrate status",
     "db:seed": "prisma db seed"
   },
   "dependencies": {

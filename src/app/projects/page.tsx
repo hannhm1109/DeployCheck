@@ -2,10 +2,12 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { ArrowUpRight, Plus } from "lucide-react";
 import { listProjects } from "@/server/data/projects";
+import { isReadOnlyDemo } from "@/server/demo-access";
 
 export default async function ProjectsPage() {
   await connection();
   const projects = await listProjects();
+  const readOnly = isReadOnlyDemo();
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
@@ -18,26 +20,26 @@ export default async function ProjectsPage() {
             {projects.length} {projects.length === 1 ? "project" : "projects"}
           </p>
         </div>
-        <Link
+        {!readOnly && <Link
           href="/projects/new"
           className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] bg-[#0d6b57] px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#095442] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57]"
         >
           <Plus size={16} strokeWidth={2.2} aria-hidden="true" />
           New project
-        </Link>
+        </Link>}
       </div>
 
       {projects.length === 0 ? (
         <section className="border-y border-[#d9e2dd] py-16 text-center">
           <h2 className="text-lg font-semibold">No projects yet</h2>
-          <p className="mt-2 text-sm text-[#64746e]">Create your first project.</p>
-          <Link
+          <p className="mt-2 text-sm text-[#64746e]">{readOnly ? "Demo data has not been loaded." : "Create your first project."}</p>
+          {!readOnly && <Link
             href="/projects/new"
             className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#0d6b57] underline-offset-4 hover:underline"
           >
             <Plus size={16} aria-hidden="true" />
             New project
-          </Link>
+          </Link>}
         </section>
       ) : (
         <section aria-label="All projects">

@@ -12,6 +12,7 @@ import {
   ReleaseProjectNotFoundError,
   ReleaseVersionTakenError,
 } from "@/server/services/releases";
+import { ReadOnlyDemoError } from "@/server/demo-access";
 
 function formValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -47,6 +48,9 @@ export async function createReleaseAction(
   try {
     created = await createRelease(parsed.data);
   } catch (error) {
+    if (error instanceof ReadOnlyDemoError) {
+      return { values, errors: {}, message: error.message };
+    }
     if (error instanceof ReleaseVersionTakenError) {
       return { values, errors: { version: error.message } };
     }

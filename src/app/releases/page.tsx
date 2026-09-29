@@ -4,10 +4,12 @@ import { ArrowUpRight, Plus } from "lucide-react";
 import { ReleaseStatusBadge } from "@/features/releases/status-badge";
 import { formatDate } from "@/lib/format-date";
 import { listReleases } from "@/server/data/releases";
+import { isReadOnlyDemo } from "@/server/demo-access";
 
 export default async function ReleasesPage() {
   await connection();
   const releases = await listReleases();
+  const readOnly = isReadOnlyDemo();
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
@@ -16,15 +18,15 @@ export default async function ReleasesPage() {
           <h1 className="text-[30px] font-semibold leading-tight text-[#152923]">Releases</h1>
           <p className="mt-2 text-sm text-[#64746e]">{releases.length} {releases.length === 1 ? "release" : "releases"}</p>
         </div>
-        <Link href="/releases/new" className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] bg-[#0d6b57] px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#095442] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57]">
+        {!readOnly && <Link href="/releases/new" className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] bg-[#0d6b57] px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#095442] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57]">
           <Plus size={16} strokeWidth={2.2} aria-hidden="true" /> New release
-        </Link>
+        </Link>}
       </div>
       {releases.length === 0 ? (
         <section className="border-y border-[#d9e2dd] py-16 text-center">
           <h2 className="text-lg font-semibold">No releases yet</h2>
-          <p className="mt-2 text-sm text-[#64746e]">Create the first release for a project.</p>
-          <Link href="/releases/new" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#0d6b57] hover:underline"><Plus size={16} aria-hidden="true" /> New release</Link>
+          <p className="mt-2 text-sm text-[#64746e]">{readOnly ? "Demo data has not been loaded." : "Create the first release for a project."}</p>
+          {!readOnly && <Link href="/releases/new" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#0d6b57] hover:underline"><Plus size={16} aria-hidden="true" /> New release</Link>}
         </section>
       ) : (
         <section aria-label="All releases">

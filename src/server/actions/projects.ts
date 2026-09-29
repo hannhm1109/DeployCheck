@@ -11,6 +11,7 @@ import {
   createProject,
   ProjectSlugTakenError,
 } from "@/server/services/projects";
+import { ReadOnlyDemoError } from "@/server/demo-access";
 
 function formValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -45,6 +46,9 @@ export async function createProjectAction(
   try {
     project = await createProject(parsed.data);
   } catch (error) {
+    if (error instanceof ReadOnlyDemoError) {
+      return { values, errors: {}, message: error.message };
+    }
     if (error instanceof ProjectSlugTakenError) {
       return { values, errors: { slug: error.message } };
     }

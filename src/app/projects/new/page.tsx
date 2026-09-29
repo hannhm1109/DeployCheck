@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { connection } from "next/server";
 import { ArrowLeft } from "lucide-react";
 import { ProjectForm } from "@/features/projects/project-form";
+import { isReadOnlyDemo } from "@/server/demo-access";
 
-export default function NewProjectPage() {
+export default async function NewProjectPage() {
+  await connection();
+  const readOnly = isReadOnlyDemo();
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
       <Link
@@ -16,7 +20,9 @@ export default function NewProjectPage() {
         <h1 className="text-[30px] font-semibold leading-tight text-[#152923]">
           New project
         </h1>
-        <ProjectForm />
+        {readOnly ? (
+          <p className="mt-9 border-y border-[#d9e2dd] py-10 text-sm text-[#64746e]">This demo is read-only. Run the app locally to create projects.</p>
+        ) : <ProjectForm />}
       </div>
     </main>
   );

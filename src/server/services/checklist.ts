@@ -1,5 +1,6 @@
 import type { ChecklistInput } from "@/lib/validation/checklist";
 import { updateRollbackPlan, upsertChecklistItem } from "@/server/data/checklist";
+import { assertDemoWritable } from "@/server/demo-access";
 import {
   ReleaseWriteLockedError,
   ReleaseWriteNotFoundError,
@@ -25,6 +26,7 @@ function mapChecklistError(error: unknown): never {
 }
 
 export async function saveChecklistItem(releaseId: string, input: ChecklistInput) {
+  assertDemoWritable();
   try {
     return await withEditableRelease(releaseId, (tx) => upsertChecklistItem(tx, releaseId, input));
   } catch (error) {
@@ -33,6 +35,7 @@ export async function saveChecklistItem(releaseId: string, input: ChecklistInput
 }
 
 export async function saveRollbackPlan(releaseId: string, rollbackNotes: string | null) {
+  assertDemoWritable();
   try {
     return await withEditableRelease(releaseId, (tx) => updateRollbackPlan(tx, releaseId, rollbackNotes));
   } catch (error) {

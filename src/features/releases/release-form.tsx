@@ -78,6 +78,7 @@ export function ReleaseForm({
         {errorFor("rollbackNotes")}
       </div>
       <div className="flex flex-wrap items-center justify-end gap-4 pt-6">
+        {state.message && <p className="w-full text-sm text-[#a13e3b]" role="alert">{state.message}</p>}
         <Link href="/releases" className="inline-flex h-10 items-center px-2 text-sm font-medium text-[#5b6c63] hover:text-[#1d2925] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f7663]">Cancel</Link>
         <button type="submit" disabled={pending} className="inline-flex h-10 w-40 items-center justify-center gap-2 rounded-[6px] bg-[#0d6b57] px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#095442] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57] disabled:cursor-wait disabled:opacity-65">
           {pending ? <LoaderCircle size={16} className="animate-spin" aria-hidden="true" /> : <Plus size={16} aria-hidden="true" />}

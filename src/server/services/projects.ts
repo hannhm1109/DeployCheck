@@ -1,6 +1,7 @@
 import { Prisma } from "@/generated/prisma/client";
 import type { CreateProjectInput } from "@/lib/validation/projects";
 import { insertProject } from "@/server/data/projects";
+import { assertDemoWritable } from "@/server/demo-access";
 
 export class ProjectSlugTakenError extends Error {
   constructor() {
@@ -9,6 +10,7 @@ export class ProjectSlugTakenError extends Error {
 }
 
 export async function createProject(input: CreateProjectInput) {
+  assertDemoWritable();
   try {
     return await insertProject(input);
   } catch (error) {

@@ -30,4 +30,5 @@ export type ReleaseFormValues = {
 export type ReleaseFormState = {
   values: ReleaseFormValues;
   errors: Partial<Record<keyof ReleaseFormValues, string>>;
+  message?: string;
 };

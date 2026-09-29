@@ -19,7 +19,12 @@ export function getDb(): PrismaClient {
     throw new Error("DATABASE_URL is required to access the database");
   }
 
-  const client = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  const client = new PrismaClient({
+    adapter: new PrismaPg({
+      connectionString,
+      max: process.env.NODE_ENV === "production" ? 2 : 10,
+    }),
+  });
   if (process.env.NODE_ENV === "production") {
     productionClient = client;
   } else {
