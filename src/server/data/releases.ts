@@ -19,7 +19,20 @@ export function listReleases() {
 export function getReleaseById(id: string) {
   return getDb().release.findUnique({
     where: { id },
-    include: { project: { select: { name: true, slug: true } } },
+    include: {
+      project: { select: { name: true, slug: true } },
+      items: { orderBy: [{ createdAt: "asc" }, { id: "asc" }] },
+      checklistItems: {
+        select: { kind: true, isComplete: true, changeRequired: true },
+      },
+    },
+  });
+}
+
+export function getReleaseForItems(id: string) {
+  return getDb().release.findUnique({
+    where: { id },
+    select: { status: true },
   });
 }
 

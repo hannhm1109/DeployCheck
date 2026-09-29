@@ -2,9 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { ArrowLeft } from "lucide-react";
+import { ReleaseItems } from "@/features/release-items/release-items";
 import { ReleaseStatusBadge } from "@/features/releases/status-badge";
 import { formatDate } from "@/lib/format-date";
+import { calculateReleaseReadiness } from "@/lib/domain/releases/readiness";
 import { getReleaseById } from "@/server/data/releases";
+import { canEditReleaseItems } from "@/server/services/release-items";
 
 export default async function ReleaseDetailPage({
   params,
@@ -15,6 +18,7 @@ export default async function ReleaseDetailPage({
   const { id } = await params;
   const release = await getReleaseById(id);
   if (!release) notFound();
+  const readiness = calculateReleaseReadiness(release);
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
@@ -35,6 +39,12 @@ export default async function ReleaseDetailPage({
             <h2 id="description-heading" className="text-lg font-semibold text-[#1b3029]">Description</h2>
             <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-[#4e6157]">{release.description || "No description added."}</p>
           </section>
+          <ReleaseItems
+            releaseId={release.id}
+            items={release.items}
+            editable={canEditReleaseItems(release.status)}
+            readiness={readiness}
+          />
           <section aria-labelledby="rollback-heading" className="border-t border-[#e2e9e5] pt-8">
             <h2 id="rollback-heading" className="text-lg font-semibold text-[#1b3029]">Rollback plan</h2>
             <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-[#4e6157]">{release.rollbackNotes || "No rollback plan added."}</p>
