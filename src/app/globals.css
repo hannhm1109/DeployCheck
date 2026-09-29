@@ -4,6 +4,10 @@ html {
   color-scheme: light;
 }
 
+body {
+  background: #f6f8f7;
+}
+
 ::selection {
   background: #c6e7db;
   color: #173b31;

@@ -19,7 +19,7 @@ export default async function ProjectDetailPage({
   const readOnly = isReadOnlyDemo();
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
+    <main className="mx-auto max-w-7xl px-5 py-9 sm:px-8 sm:py-12">
       <Link
         href="/projects"
         className="inline-flex items-center gap-2 text-sm font-medium text-[#60736a] hover:text-[#0d6b57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f7663]"
@@ -28,8 +28,8 @@ export default async function ProjectDetailPage({
         Projects
       </Link>
 
-      <header className="mt-8 border-b border-[#d9e2dd] pb-8">
-        <h1 className="break-words text-[30px] font-semibold leading-tight text-[#152923]">
+      <header className="mt-7 border-b border-[#dce5df] pb-7">
+        <h1 className="break-words text-[32px] font-semibold leading-tight text-[#192822]">
           {project.name}
         </h1>
         <p className="mt-2 break-all font-mono text-xs text-[#6d7d74]">
@@ -57,10 +57,10 @@ export default async function ProjectDetailPage({
               No releases recorded for this project.
             </div>
           ) : (
-            <ul className="divide-y divide-[#e2e9e5] border-y border-[#d9e2dd]">
+            <ul className="divide-y divide-[#e5ebe7] border border-[#dce5df] bg-white">
               {project.releases.map((release) => (
                 <li key={release.id}>
-                  <Link href={`/releases/${release.id}`} className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 px-2 py-4 transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-[#0f7663]">
+                  <Link href={`/releases/${release.id}`} className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 px-5 py-4 transition-colors hover:bg-[#f3f8f5] focus-visible:outline-2 focus-visible:outline-[#0b7059]">
                     <div className="min-w-0">
                       <span className="font-mono text-sm font-semibold text-[#1c4033]">{release.version}</span>
                       <p className="mt-1 truncate text-sm text-[#65766d]">{release.title}</p>

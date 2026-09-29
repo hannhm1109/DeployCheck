@@ -8,7 +8,7 @@ export default async function NewProjectPage() {
   await connection();
   const readOnly = isReadOnlyDemo();
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
+    <main className="mx-auto max-w-7xl px-5 py-9 sm:px-8 sm:py-12">
       <Link
         href="/projects"
         className="inline-flex items-center gap-2 text-sm font-medium text-[#60736a] hover:text-[#0d6b57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f7663]"
@@ -16,8 +16,8 @@ export default async function NewProjectPage() {
         <ArrowLeft size={16} aria-hidden="true" />
         Projects
       </Link>
-      <div className="mt-8 max-w-2xl">
-        <h1 className="text-[30px] font-semibold leading-tight text-[#152923]">
+      <div className="mt-7 max-w-2xl">
+        <h1 className="text-[32px] font-semibold leading-tight text-[#192822]">
           New project
         </h1>
         {readOnly ? (

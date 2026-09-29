@@ -10,19 +10,19 @@ export default async function ProjectsPage() {
   const readOnly = isReadOnlyDemo();
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
-      <div className="mb-9 flex flex-wrap items-end justify-between gap-5">
+    <main className="mx-auto max-w-7xl px-5 py-9 sm:px-8 sm:py-12">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-5">
         <div>
-          <h1 className="text-[30px] font-semibold leading-tight text-[#152923]">
+          <h1 className="text-[32px] font-semibold leading-tight text-[#192822]">
             Projects
           </h1>
-          <p className="mt-2 text-sm text-[#64746e]">
+          <p className="mt-1.5 text-sm text-[#607269]">
             {projects.length} {projects.length === 1 ? "project" : "projects"}
           </p>
         </div>
         {!readOnly && <Link
           href="/projects/new"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] bg-[#0d6b57] px-4 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#095442] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0d6b57]"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-[6px] bg-[#0b7059] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#075540] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b7059]"
         >
           <Plus size={16} strokeWidth={2.2} aria-hidden="true" />
           New project
@@ -43,18 +43,18 @@ export default async function ProjectsPage() {
         </section>
       ) : (
         <section aria-label="All projects">
-          <div className="hidden grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_90px_24px] gap-5 border-y border-[#d9e2dd] px-4 py-3 text-xs font-semibold text-[#667771] md:grid">
+          <div className="hidden grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_90px_24px] gap-5 border-x border-t border-[#dce5df] bg-[#eef3f0] px-5 py-3 text-[11px] font-semibold uppercase text-[#607269] md:grid">
             <span>Project</span>
             <span>Slug</span>
             <span>Releases</span>
             <span className="sr-only">Open</span>
           </div>
-          <ul className="divide-y divide-[#e2e9e5] border-y border-[#d9e2dd] md:border-t-0">
+          <ul className="divide-y divide-[#e5ebe7] border border-[#dce5df] bg-white">
             {projects.map((project) => (
               <li key={project.id}>
                 <Link
                   href={`/projects/${project.slug}`}
-                  className="grid min-h-23 grid-cols-[minmax(0,1fr)_auto] items-center gap-5 px-4 py-4 transition-colors hover:bg-white focus-visible:bg-white focus-visible:outline-2 focus-visible:outline-[#0f7663] md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_90px_24px]"
+                  className="grid min-h-23 grid-cols-[minmax(0,1fr)_auto] items-center gap-5 px-4 py-4 transition-colors hover:bg-[#f3f8f5] focus-visible:outline-2 focus-visible:outline-[#0b7059] md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_90px_24px] md:px-5"
                 >
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold text-[#1b3029]">

@@ -29,20 +29,20 @@ export default async function ReleaseDetailPage({
   const editable = !readOnly && canEditReleaseContent(release.status);
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
+    <main className="mx-auto max-w-7xl px-5 py-9 sm:px-8 sm:py-12">
       <Link href="/releases" className="inline-flex items-center gap-2 text-sm font-medium text-[#60736a] hover:text-[#0d6b57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f7663]">
         <ArrowLeft size={16} aria-hidden="true" /> Releases
       </Link>
-      <header className="mt-8 border-b border-[#d9e2dd] pb-8">
+      <header className="mt-7 pb-7">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="break-all font-mono text-[30px] font-semibold leading-tight text-[#152923]">{release.version}</h1>
+          <h1 className="break-all font-mono text-[32px] font-semibold leading-tight text-[#192822]">{release.version}</h1>
           <ReleaseStatusBadge status={release.status} />
         </div>
         <p className="mt-3 break-words text-lg text-[#32473b]">{release.title}</p>
         <Link href={`/projects/${release.project.slug}`} className="mt-4 inline-block text-sm font-medium text-[#0d6b57] hover:underline">{release.project.name}</Link>
       </header>
       <ReadinessSummary readiness={readiness} />
-      <div className="grid gap-10 pt-8 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-12">
+      <div className="grid gap-10 pt-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-12">
         <div className="order-last min-w-0 space-y-9 lg:order-first">
           <section aria-labelledby="description-heading">
             <h2 id="description-heading" className="text-lg font-semibold text-[#1b3029]">Description</h2>
