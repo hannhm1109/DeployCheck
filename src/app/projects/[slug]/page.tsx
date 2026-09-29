@@ -1,20 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { ArrowLeft } from "lucide-react";
-import { ReleaseStatus } from "@/generated/prisma/enums";
+import { ArrowLeft, Plus } from "lucide-react";
+import { ReleaseStatusBadge } from "@/features/releases/status-badge";
 import { formatDate } from "@/lib/format-date";
 import { getProjectBySlug } from "@/server/data/projects";
-
-const statusDisplay: Record<ReleaseStatus, { label: string; className: string }> = {
-  DRAFT: { label: "Draft", className: "bg-[#e8eeeb] text-[#54665c]" },
-  IN_REVIEW: { label: "In review", className: "bg-[#fff0d6] text-[#865900]" },
-  READY: { label: "Ready", className: "bg-[#d9f0e3] text-[#176143]" },
-  DEPLOYING: { label: "Deploying", className: "bg-[#e0edfa] text-[#2e638e]" },
-  DEPLOYED: { label: "Deployed", className: "bg-[#e0edfa] text-[#2e638e]" },
-  FAILED: { label: "Failed", className: "bg-[#f9e2df] text-[#a3443c]" },
-  ROLLED_BACK: { label: "Rolled back", className: "bg-[#f1e6ec] text-[#884b69]" },
-};
 
 export default async function ProjectDetailPage({
   params,
@@ -52,13 +42,13 @@ export default async function ProjectDetailPage({
 
       <div className="grid gap-10 pt-8 lg:grid-cols-[minmax(0,1fr)_240px] lg:gap-12">
         <section aria-labelledby="releases-heading" className="min-w-0">
-          <div className="mb-5 flex items-baseline justify-between gap-4">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <h2 id="releases-heading" className="text-lg font-semibold text-[#1b3029]">
-              Releases
+              Releases <span className="ml-1 text-sm font-normal tabular-nums text-[#697a70]">{project.releases.length}</span>
             </h2>
-            <span className="text-sm tabular-nums text-[#697a70]">
-              {project.releases.length}
-            </span>
+            <Link href={`/releases/new?project=${encodeURIComponent(project.slug)}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d6b57] hover:underline">
+              <Plus size={16} aria-hidden="true" /> New release
+            </Link>
           </div>
           {project.releases.length === 0 ? (
             <div className="border-y border-[#d9e2dd] py-12 text-sm text-[#6b7d72]">
@@ -67,30 +57,21 @@ export default async function ProjectDetailPage({
           ) : (
             <ul className="divide-y divide-[#e2e9e5] border-y border-[#d9e2dd]">
               {project.releases.map((release) => (
-                <li
-                  key={release.id}
-                  className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 py-4"
-                >
-                  <div className="min-w-0">
-                    <span className="font-mono text-sm font-semibold text-[#1c4033]">
-                      {release.version}
-                    </span>
-                    <p className="mt-1 truncate text-sm text-[#65766d]">
-                      {release.title}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
+                <li key={release.id}>
+                  <Link href={`/releases/${release.id}`} className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 px-2 py-4 transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-[#0f7663]">
+                    <div className="min-w-0">
+                      <span className="font-mono text-sm font-semibold text-[#1c4033]">{release.version}</span>
+                      <p className="mt-1 truncate text-sm text-[#65766d]">{release.title}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
                     {release.targetDeploymentDate && (
                       <span className="hidden whitespace-nowrap text-xs text-[#76877d] sm:inline">
                         {formatDate(release.targetDeploymentDate)}
                       </span>
                     )}
-                    <span
-                      className={`inline-flex min-h-6 items-center whitespace-nowrap rounded-[4px] px-2 py-0.5 text-xs font-medium ${statusDisplay[release.status].className}`}
-                    >
-                      {statusDisplay[release.status].label}
-                    </span>
-                  </div>
+                      <ReleaseStatusBadge status={release.status} />
+                    </div>
+                  </Link>
                 </li>
               ))}
             </ul>

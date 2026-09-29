@@ -4,7 +4,7 @@ DeployCheck is a lightweight release-readiness and deployment tracking tool for 
 
 ## Current status
 
-Phase 2 is complete: the Projects page, create-project form, and project detail page are usable. Seeded releases appear as read-only summaries on project details. Release creation and detail workflows begin in Phase 3.
+Phase 3 is complete: releases can be listed, created for a project, and opened in a read-only detail view. New releases start in `DRAFT` and receive the five required checklist rows. Release-item editing, checklist interaction, and status transitions belong to later phases.
 
 ## MVP workflow
 
@@ -25,7 +25,7 @@ The planned request path is:
 Next.js UI -> Server Actions -> services and domain rules -> data access -> Prisma -> PostgreSQL
 ```
 
-The project form calls a Server Action that validates input with Zod, passes it to a project service, and then uses Prisma data access. Duplicate slugs are reported on the form. Route Handlers will be added only when an external caller or webhook needs an HTTP endpoint. Readiness and transition rules are pure functions outside React components; later server services will call them before saving a status change.
+Project and release forms call Server Actions that validate input with Zod, pass it through a service, and then use Prisma data access. Duplicate project slugs and release versions are reported on their forms. Release creation initializes required checks in the same database write. Route Handlers will be added only when an external caller or webhook needs an HTTP endpoint. Readiness and transition rules are pure functions outside React components; later server services will call them before saving a status change.
 
 Planned structure as features are implemented:
 
@@ -62,7 +62,7 @@ The pure functions and their tests are in `src/lib/domain/releases/` and `tests/
 
 ## Stack and local setup
 
-The project uses Next.js App Router, TypeScript, Tailwind CSS, PostgreSQL, Prisma 7, Zod, Lucide icons, ESLint, and Vitest. The three-field form uses React's `useActionState` for validation feedback without a separate form library.
+The project uses Next.js App Router, TypeScript, Tailwind CSS, PostgreSQL, Prisma 7, Zod, Lucide icons, ESLint, and Vitest. Forms use React's `useActionState` for validation feedback without a separate form library.
 
 Start PostgreSQL locally with Docker Desktop:
 
@@ -79,10 +79,13 @@ npm run db:migrate -- --name init
 npm run db:seed
 npm test
 npm run test:projects
+npm run test:releases
 npm run dev
 ```
 
-On PowerShell, use `Copy-Item .env.example .env` instead of `cp` if preferred. Open <http://localhost:3000> to browse projects. The seed is repeatable and leaves existing records unchanged. `npm run test:projects` needs the local database; it creates and removes one temporary project.
+On PowerShell, use `Copy-Item .env.example .env` instead of `cp` if preferred. Open <http://localhost:3000> to browse projects and releases. The seed is repeatable and leaves existing records unchanged. The `test:projects` and `test:releases` smoke scripts need the local database; each creates and removes temporary records.
+
+To check Phase 3 manually, open **Releases**, create a release, and confirm its title, version, target date, rollback plan, and `Draft` status on the detail page. Return to the list and open the project to confirm the release appears in both places. Creating the same version twice within one project should show a form error; the same version in another project is allowed.
 
 ## Why this shape
 
@@ -90,4 +93,4 @@ Next.js provides the UI and server entry points in one application. PostgreSQL f
 
 ## Next phase
 
-Phase 3 will add the release list, create-release flow, release detail page, and release metadata. Each phase stops for review before the next begins.
+Phase 4 will add release-item creation and editing. Each phase stops for review before the next begins.

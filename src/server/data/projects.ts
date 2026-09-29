@@ -32,6 +32,20 @@ export function getProjectBySlug(slug: string) {
   });
 }
 
+export function getProjectForRelease(id: string) {
+  return getDb().project.findUnique({
+    where: { id },
+    select: { id: true, slug: true },
+  });
+}
+
+export function listProjectOptions() {
+  return getDb().project.findMany({
+    select: { id: true, name: true, slug: true },
+    orderBy: { name: "asc" },
+  });
+}
+
 export function insertProject(input: CreateProjectInput) {
   return getDb().project.create({ data: input });
 }

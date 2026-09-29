@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Blocks } from "lucide-react";
+import { AppNav } from "@/components/layout/app-nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -23,15 +24,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </span>
               <span>DeployCheck</span>
             </Link>
-            <nav aria-label="Main navigation">
-              <Link
-                href="/projects"
-                aria-current="page"
-                className="inline-flex h-10 items-center border-b-2 border-[#0d6b57] px-2 text-sm font-medium text-[#164d40] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f7663]"
-              >
-                Projects
-              </Link>
-            </nav>
+            <AppNav />
           </div>
         </header>
         {children}
