@@ -23,13 +23,13 @@ export function getReleaseById(id: string) {
       project: { select: { name: true, slug: true } },
       items: { orderBy: [{ createdAt: "asc" }, { id: "asc" }] },
       checklistItems: {
-        select: { kind: true, isComplete: true, changeRequired: true },
+        select: { kind: true, isComplete: true, changeRequired: true, notes: true },
       },
     },
   });
 }
 
-export function getReleaseForItems(id: string) {
+export function getReleaseForContent(id: string) {
   return getDb().release.findUnique({
     where: { id },
     select: { status: true },

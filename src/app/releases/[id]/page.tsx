@@ -3,11 +3,14 @@ import { notFound } from "next/navigation";
 import { connection } from "next/server";
 import { ArrowLeft } from "lucide-react";
 import { ReleaseItems } from "@/features/release-items/release-items";
+import { DeploymentChecklist } from "@/features/releases/deployment-checklist";
+import { ReadinessSummary } from "@/features/releases/readiness-summary";
+import { RollbackPlan } from "@/features/releases/rollback-plan";
 import { ReleaseStatusBadge } from "@/features/releases/status-badge";
 import { formatDate } from "@/lib/format-date";
 import { calculateReleaseReadiness } from "@/lib/domain/releases/readiness";
+import { canEditReleaseContent } from "@/lib/domain/releases/editability";
 import { getReleaseById } from "@/server/data/releases";
-import { canEditReleaseItems } from "@/server/services/release-items";
 
 export default async function ReleaseDetailPage({
   params,
@@ -19,6 +22,7 @@ export default async function ReleaseDetailPage({
   const release = await getReleaseById(id);
   if (!release) notFound();
   const readiness = calculateReleaseReadiness(release);
+  const editable = canEditReleaseContent(release.status);
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
@@ -33,6 +37,7 @@ export default async function ReleaseDetailPage({
         <p className="mt-3 break-words text-lg text-[#32473b]">{release.title}</p>
         <Link href={`/projects/${release.project.slug}`} className="mt-4 inline-block text-sm font-medium text-[#0d6b57] hover:underline">{release.project.name}</Link>
       </header>
+      <ReadinessSummary readiness={readiness} />
       <div className="grid gap-10 pt-8 lg:grid-cols-[minmax(0,1fr)_260px] lg:gap-12">
         <div className="min-w-0 space-y-9">
           <section aria-labelledby="description-heading">
@@ -42,13 +47,16 @@ export default async function ReleaseDetailPage({
           <ReleaseItems
             releaseId={release.id}
             items={release.items}
-            editable={canEditReleaseItems(release.status)}
+            editable={editable}
             readiness={readiness}
           />
-          <section aria-labelledby="rollback-heading" className="border-t border-[#e2e9e5] pt-8">
-            <h2 id="rollback-heading" className="text-lg font-semibold text-[#1b3029]">Rollback plan</h2>
-            <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-[#4e6157]">{release.rollbackNotes || "No rollback plan added."}</p>
-          </section>
+          <DeploymentChecklist
+            releaseId={release.id}
+            checks={release.checklistItems}
+            editable={editable}
+            completedChecks={readiness.completedChecks}
+          />
+          <RollbackPlan releaseId={release.id} notes={release.rollbackNotes} editable={editable} />
         </div>
         <aside className="border-t border-[#d9e2dd] pt-6 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
           <h2 className="text-sm font-semibold text-[#263b31]">Release details</h2>

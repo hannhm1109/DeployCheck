@@ -1,17 +1,8 @@
 import { Prisma } from "@/generated/prisma/client";
-import { ReleaseStatus } from "@/generated/prisma/enums";
+import { canEditReleaseContent } from "@/lib/domain/releases/editability";
 import type { ReleaseItemInput } from "@/lib/validation/release-items";
 import { deleteReleaseItem, insertReleaseItem, updateReleaseItem } from "@/server/data/release-items";
-import { getReleaseForItems } from "@/server/data/releases";
-
-const editableStatuses = new Set<ReleaseStatus>([
-  ReleaseStatus.DRAFT,
-  ReleaseStatus.IN_REVIEW,
-]);
-
-export function canEditReleaseItems(status: ReleaseStatus): boolean {
-  return editableStatuses.has(status);
-}
+import { getReleaseForContent } from "@/server/data/releases";
 
 export class ReleaseItemsLockedError extends Error {
   constructor() {
@@ -32,9 +23,9 @@ export class ReleaseItemReferenceTakenError extends Error {
 }
 
 async function assertEditable(releaseId: string) {
-  const release = await getReleaseForItems(releaseId);
+  const release = await getReleaseForContent(releaseId);
   if (!release) throw new ReleaseItemNotFoundError();
-  if (!canEditReleaseItems(release.status)) throw new ReleaseItemsLockedError();
+  if (!canEditReleaseContent(release.status)) throw new ReleaseItemsLockedError();
 }
 
 function mapDuplicateReference(error: unknown): never {

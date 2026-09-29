@@ -11,7 +11,7 @@ export const REQUIRED_CHECKS = [
   ChecklistKind.ROLLBACK_PLAN_DOCUMENTED,
 ] as const;
 
-const CHECK_LABELS: Record<ChecklistKind, string> = {
+export const CHECK_LABELS: Record<ChecklistKind, string> = {
   QA_VALIDATED: "QA validation",
   DATABASE_MIGRATION_CHECKED: "Database migration check",
   ENVIRONMENT_VARIABLES_CHECKED: "Environment variable check",
@@ -24,6 +24,10 @@ const CHANGE_CHECKS = new Set<ChecklistKind>([
   ChecklistKind.ENVIRONMENT_VARIABLES_CHECKED,
   ChecklistKind.BACKGROUND_JOBS_CHECKED,
 ]);
+
+export function requiresChangeDecision(kind: ChecklistKind): boolean {
+  return CHANGE_CHECKS.has(kind);
+}
 
 export type ReleaseReadinessInput = {
   items: readonly {
@@ -72,7 +76,7 @@ export function getReleaseBlockers(
       });
     }
 
-    if (CHANGE_CHECKS.has(kind) && check.changeRequired === null) {
+    if (requiresChangeDecision(kind) && check.changeRequired === null) {
       blockers.push({
         code: "CHANGE_REQUIREMENT_UNKNOWN",
         message: `${CHECK_LABELS[kind]} has no change decision`,

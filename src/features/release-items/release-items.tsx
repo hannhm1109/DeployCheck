@@ -65,7 +65,7 @@ export function ReleaseItems({
   releaseId: string;
   items: Item[];
   editable: boolean;
-  readiness: { isReady: boolean; readyItems: number; totalItems: number };
+  readiness: { readyItems: number; totalItems: number };
 }) {
   const [showCreate, setShowCreate] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -75,7 +75,7 @@ export function ReleaseItems({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 id="tickets-heading" className="text-lg font-semibold text-[#1b3029]">Tickets <span className="ml-1 text-sm font-normal tabular-nums text-[#697a70]">{items.length}</span></h2>
-          <p className="mt-1 text-sm text-[#64746e]">{readiness.readyItems}/{readiness.totalItems} items ready | Readiness criteria {readiness.isReady ? "met" : "not met"}</p>
+          <p className="mt-1 text-sm text-[#64746e]">{readiness.readyItems}/{readiness.totalItems} items ready</p>
         </div>
         {editable && (
           <button type="button" onClick={() => { setEditingId(null); setShowCreate((value) => !value); }} aria-expanded={showCreate} className="inline-flex h-9 items-center gap-1.5 rounded-[6px] border border-[#cbd8d1] bg-white px-3 text-sm font-semibold text-[#0d6b57] hover:border-[#0d6b57] focus-visible:outline-2 focus-visible:outline-[#0d6b57]"><Plus size={16} aria-hidden="true" /> Add item</button>

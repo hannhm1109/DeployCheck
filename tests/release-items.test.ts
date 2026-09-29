@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ReleaseItemStatus, ReleaseItemType, ReleaseStatus } from "../src/generated/prisma/enums";
 import { releaseItemSchema } from "../src/lib/validation/release-items";
-import { canEditReleaseItems } from "../src/server/services/release-items";
+import { canEditReleaseContent } from "../src/lib/domain/releases/editability";
 
 const valid = {
   externalReference: " nsc-482 ",
@@ -29,8 +29,8 @@ describe("release items", () => {
   });
 
   it("allows item edits only during draft and review", () => {
-    expect(canEditReleaseItems(ReleaseStatus.DRAFT)).toBe(true);
-    expect(canEditReleaseItems(ReleaseStatus.IN_REVIEW)).toBe(true);
+    expect(canEditReleaseContent(ReleaseStatus.DRAFT)).toBe(true);
+    expect(canEditReleaseContent(ReleaseStatus.IN_REVIEW)).toBe(true);
     for (const status of [
       ReleaseStatus.READY,
       ReleaseStatus.DEPLOYING,
@@ -38,7 +38,7 @@ describe("release items", () => {
       ReleaseStatus.FAILED,
       ReleaseStatus.ROLLED_BACK,
     ]) {
-      expect(canEditReleaseItems(status)).toBe(false);
+      expect(canEditReleaseContent(status)).toBe(false);
     }
   });
 });
