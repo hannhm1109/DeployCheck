@@ -3,7 +3,7 @@ import { getDb } from "@/server/db";
 
 const PAGE_SIZE = 20;
 
-export async function listDeploymentHistory({
+export async function listDeploymentHistory(workspaceId: string, {
   page = 1,
   result,
   releaseId,
@@ -14,6 +14,7 @@ export async function listDeploymentHistory({
 } = {}) {
   const db = getDb();
   const where = {
+    release: { project: { workspaceId } },
     ...(result ? { result } : {}),
     ...(releaseId ? { releaseId } : {}),
   };

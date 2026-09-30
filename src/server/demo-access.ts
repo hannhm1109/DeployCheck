@@ -5,7 +5,7 @@ export class ReadOnlyDemoError extends Error {
 }
 
 export function isReadOnlyDemo(): boolean {
-  return process.env.NODE_ENV === "production" && process.env.ALLOW_UNAUTHENTICATED_WRITES !== "true";
+  return process.env.READ_ONLY_DEMO === "true";
 }
 
 export function assertDemoWritable(): void {

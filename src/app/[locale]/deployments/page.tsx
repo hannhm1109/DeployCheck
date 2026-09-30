@@ -6,6 +6,7 @@ import { DeploymentResult } from "@/generated/prisma/enums";
 import { DeploymentResultBadge } from "@/features/deployments/deployment-result-badge";
 import { formatDateTime } from "@/lib/format-date";
 import { listDeploymentHistory } from "@/server/data/deployments";
+import { requireActiveWorkspace } from "@/server/access";
 
 type Query = { page?: string | string[]; result?: string | string[]; release?: string | string[] };
 
@@ -20,13 +21,14 @@ function historyUrl(page: number, result?: DeploymentResult, releaseId?: string)
 
 export default async function DeploymentsPage({ searchParams }: { searchParams: Promise<Query> }) {
   await connection();
+  const { workspace } = await requireActiveWorkspace();
   const query = await searchParams;
   const result = Object.values(DeploymentResult).includes(query.result as DeploymentResult)
     ? query.result as DeploymentResult
     : undefined;
   const releaseId = typeof query.release === "string" && query.release.length <= 100 ? query.release : undefined;
   const pageInput = typeof query.page === "string" && /^[1-9]\d{0,5}$/.test(query.page) ? Number(query.page) : 1;
-  const { deployments, total, pageCount, page } = await listDeploymentHistory({ page: pageInput, result, releaseId });
+  const { deployments, total, pageCount, page } = await listDeploymentHistory(workspace.id, { page: pageInput, result, releaseId });
   const release = deployments[0]?.release;
   const [locale, t, releases] = await Promise.all([
     getLocale(), getTranslations("History"), getTranslations("Releases"),

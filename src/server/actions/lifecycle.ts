@@ -12,6 +12,7 @@ import {
 } from "@/server/services/lifecycle";
 import { ReleaseWriteConflictError } from "@/server/services/release-write";
 import { ReadOnlyDemoError } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 export async function transitionReleaseAction(
   releaseId: string,
@@ -19,6 +20,7 @@ export async function transitionReleaseAction(
   _previous: TransitionFormState,
   formData: FormData,
 ): Promise<TransitionFormState> {
+  const { workspace } = await requireActiveWorkspace();
   const locale = parseLocale(formData.get("locale"));
   const rawNotes = formData.get("notes");
   const parsed = transitionInputSchema.safeParse({
@@ -31,7 +33,7 @@ export async function transitionReleaseAction(
 
   let projectSlug: string;
   try {
-    const result = await transitionReleaseStatus(releaseId, parsed.data);
+    const result = await transitionReleaseStatus(workspace.id, releaseId, parsed.data);
     projectSlug = result.projectSlug;
   } catch (error) {
     if (error instanceof ReadOnlyDemoError || error instanceof ReleaseTransitionNotFoundError || error instanceof ReleaseTransitionRejectedError || error instanceof ReleaseWriteConflictError) {

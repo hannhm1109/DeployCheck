@@ -30,17 +30,18 @@ export async function runSerializableTransaction<T>(
 }
 
 export function withEditableRelease<T>(
+  workspaceId: string,
   releaseId: string,
   work: (tx: Prisma.TransactionClient) => Promise<T>,
 ): Promise<T> {
   return runSerializableTransaction(async (tx) => {
     const locked = await tx.release.updateMany({
-      where: { id: releaseId, status: { in: [...EDITABLE_RELEASE_STATUSES] } },
+      where: { id: releaseId, project: { workspaceId }, status: { in: [...EDITABLE_RELEASE_STATUSES] } },
       data: { updatedAt: new Date() },
     });
     if (locked.count !== 1) {
-      const release = await tx.release.findUnique({
-        where: { id: releaseId },
+      const release = await tx.release.findFirst({
+        where: { id: releaseId, project: { workspaceId } },
         select: { id: true },
       });
       if (!release) throw new ReleaseWriteNotFoundError();

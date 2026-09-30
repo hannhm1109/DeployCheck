@@ -7,6 +7,7 @@ import { ReleaseStatusBadge } from "@/features/releases/status-badge";
 import { formatDate } from "@/lib/format-date";
 import { getProjectBySlug } from "@/server/data/projects";
 import { isReadOnlyDemo } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 export default async function ProjectDetailPage({
   params,
@@ -14,8 +15,9 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   await connection();
+  const { workspace } = await requireActiveWorkspace();
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const project = await getProjectBySlug(workspace.id, slug);
   if (!project) notFound();
   const [locale, t, nav, common] = await Promise.all([
     getLocale(), getTranslations("Projects"), getTranslations("Nav"), getTranslations("Common"),

@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { ReleaseForm } from "@/features/releases/release-form";
 import { listProjectOptions } from "@/server/data/projects";
 import { isReadOnlyDemo } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 export default async function NewReleasePage({
   searchParams,
@@ -12,9 +13,10 @@ export default async function NewReleasePage({
   searchParams: Promise<{ project?: string }>;
 }) {
   await connection();
+  const { workspace } = await requireActiveWorkspace();
   const [{ project: projectSlug }, projects] = await Promise.all([
     searchParams,
-    listProjectOptions(),
+    listProjectOptions(workspace.id),
   ]);
   const selectedProjectId = projects.find((project) => project.slug === projectSlug)?.id;
   const [t, nav, common] = await Promise.all([

@@ -4,10 +4,11 @@ import { ChecklistKind, ReleaseStatus } from "../src/generated/prisma/enums";
 import { calculateReleaseReadiness, REQUIRED_CHECKS } from "../src/lib/domain/releases/readiness";
 import { checklistInputSchema } from "../src/lib/validation/checklist";
 import { createReleaseSchema } from "../src/lib/validation/releases";
-import { saveChecklistItemAction, saveRollbackPlanAction } from "../src/server/actions/checklist";
 import { getDb } from "../src/server/db";
 import { ChecklistLockedError, saveChecklistItem, saveRollbackPlan } from "../src/server/services/checklist";
 import { createRelease } from "../src/server/services/releases";
+
+const workspaceId = "legacy-workspace";
 
 async function main() {
   const db = getDb();
@@ -16,17 +17,11 @@ async function main() {
   let releaseId: string | undefined;
 
   try {
-    const invalid = new FormData();
-    invalid.set("isComplete", "maybe");
-    invalid.set("changeRequired", "sometimes");
-    const emptyState = { values: { isComplete: false, changeRequired: "" as const, notes: "" }, errors: {} };
-    const invalidResult = await saveChecklistItemAction("missing", ChecklistKind.DATABASE_MIGRATION_CHECKED, emptyState, invalid);
-    assert.ok(invalidResult.errors.isComplete);
-    assert.ok(invalidResult.errors.changeRequired);
+    assert.equal(checklistInputSchema.safeParse({ kind: ChecklistKind.DATABASE_MIGRATION_CHECKED, isComplete: "maybe", changeRequired: "sometimes", notes: "" }).success, false);
 
-    const project = await db.project.create({ data: { name: "Phase 5 Check", slug } });
+    const project = await db.project.create({ data: { name: "Phase 5 Check", slug, workspaceId } });
     projectId = project.id;
-    const { release } = await createRelease(createReleaseSchema.parse({
+    const { release } = await createRelease(workspaceId, createReleaseSchema.parse({
       projectId,
       version: "v1.0.0",
       title: "Temporary release",
@@ -52,7 +47,7 @@ async function main() {
         changeRequired: kind === ChecklistKind.QA_VALIDATED || kind === ChecklistKind.ROLLBACK_PLAN_DOCUMENTED ? "" : "false",
         notes: kind === ChecklistKind.QA_VALIDATED ? "QA signed off" : "",
       });
-      await saveChecklistItem(releaseId, input);
+      await saveChecklistItem(workspaceId, releaseId, input);
     }
     const restored = await db.release.findUnique({ where: { id: releaseId }, include: { items: true, checklistItems: true } });
     assert.equal(restored?.checklistItems.length, REQUIRED_CHECKS.length);
@@ -60,11 +55,11 @@ async function main() {
     assert.equal(calculateReleaseReadiness(restored!).completedChecks, REQUIRED_CHECKS.length);
     assert.deepEqual(calculateReleaseReadiness(restored!).blockers.map((blocker) => blocker.code), ["ROLLBACK_PLAN_MISSING"]);
 
-    await saveRollbackPlan(releaseId, "Restore the previous image.");
+    await saveRollbackPlan(workspaceId, releaseId, "Restore the previous image.");
     const ready = await db.release.findUnique({ where: { id: releaseId }, include: { items: true, checklistItems: true } });
     assert.equal(calculateReleaseReadiness(ready!).isReady, true);
 
-    await saveChecklistItem(releaseId, checklistInputSchema.parse({
+    await saveChecklistItem(workspaceId, releaseId, checklistInputSchema.parse({
       kind: ChecklistKind.ENVIRONMENT_VARIABLES_CHECKED,
       isComplete: "true",
       changeRequired: "",
@@ -74,17 +69,13 @@ async function main() {
     assert.ok(calculateReleaseReadiness(undecided!).blockers.some((blocker) => blocker.code === "CHANGE_REQUIREMENT_UNKNOWN"));
 
     await db.release.update({ where: { id: releaseId }, data: { status: ReleaseStatus.READY } });
-    await assert.rejects(() => saveChecklistItem(createdReleaseId, checklistInputSchema.parse({
+    await assert.rejects(() => saveChecklistItem(workspaceId, createdReleaseId, checklistInputSchema.parse({
       kind: ChecklistKind.QA_VALIDATED,
       isComplete: "false",
       changeRequired: "",
       notes: "",
     })), ChecklistLockedError);
-    await assert.rejects(() => saveRollbackPlan(createdReleaseId, null), ChecklistLockedError);
-    const lockedPlan = new FormData();
-    lockedPlan.set("rollbackNotes", "Change after ready");
-    const lockedResult = await saveRollbackPlanAction(releaseId, { value: "" }, lockedPlan);
-    assert.match(lockedResult.error ?? "", /Draft or In review/);
+    await assert.rejects(() => saveRollbackPlan(workspaceId, createdReleaseId, null), ChecklistLockedError);
   } finally {
     if (releaseId) {
       await db.releaseChecklistItem.deleteMany({ where: { releaseId } });

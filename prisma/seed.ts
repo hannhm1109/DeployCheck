@@ -223,6 +223,11 @@ async function main() {
 
   try {
     await prisma.$transaction(async (tx) => {
+      const legacyWorkspace = await tx.workspace.upsert({
+        where: { slug: "legacy-demo" },
+        update: {},
+        create: { id: "legacy-workspace", name: "DeployCheck Demo", slug: "legacy-demo" },
+      });
       const projectIds = new Map<string, string>();
 
       for (const project of [
@@ -238,9 +243,9 @@ async function main() {
         },
       ]) {
         const saved = await tx.project.upsert({
-          where: { slug: project.slug },
+          where: { workspaceId_slug: { workspaceId: legacyWorkspace.id, slug: project.slug } },
           update: {},
-          create: project,
+          create: { ...project, workspaceId: legacyWorkspace.id },
         });
         projectIds.set(project.slug, saved.id);
       }

@@ -17,13 +17,13 @@ export class ReleaseProjectNotFoundError extends Error {
   }
 }
 
-export async function createRelease(input: CreateReleaseInput) {
+export async function createRelease(workspaceId: string, input: CreateReleaseInput) {
   assertDemoWritable();
-  const project = await getProjectForRelease(input.projectId);
+  const project = await getProjectForRelease(workspaceId, input.projectId);
   if (!project) throw new ReleaseProjectNotFoundError();
 
   try {
-    const release = await insertRelease(input, REQUIRED_CHECKS);
+    const release = await insertRelease(workspaceId, input, REQUIRED_CHECKS);
     return { release, projectSlug: project.slug };
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {

@@ -15,6 +15,7 @@ import { calculateReleaseReadiness } from "@/lib/domain/releases/readiness";
 import { canEditReleaseContent } from "@/lib/domain/releases/editability";
 import { getReleaseById } from "@/server/data/releases";
 import { isReadOnlyDemo } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 export default async function ReleaseDetailPage({
   params,
@@ -22,8 +23,9 @@ export default async function ReleaseDetailPage({
   params: Promise<{ id: string }>;
 }) {
   await connection();
+  const { workspace } = await requireActiveWorkspace();
   const { id } = await params;
-  const release = await getReleaseById(id);
+  const release = await getReleaseById(workspace.id, id);
   if (!release) notFound();
   const [locale, t, nav, common] = await Promise.all([
     getLocale(), getTranslations("Detail"), getTranslations("Nav"), getTranslations("Common"),

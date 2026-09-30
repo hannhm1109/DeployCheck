@@ -19,6 +19,7 @@ import {
 } from "@/server/services/release-items";
 import { ReleaseWriteConflictError } from "@/server/services/release-write";
 import { ReadOnlyDemoError } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 function formValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -70,13 +71,14 @@ export async function addReleaseItemAction(
   _previous: ReleaseItemFormState,
   formData: FormData,
 ): Promise<ReleaseItemFormState> {
+  const { workspace } = await requireActiveWorkspace();
   const locale = parseLocale(formData.get("locale"));
   const values = readItemForm(formData);
   const parsed = validateItemForm(values, locale);
   if (parsed.state) return parsed.state;
 
   try {
-    await addReleaseItem(releaseId, parsed.input!);
+    await addReleaseItem(workspace.id, releaseId, parsed.input!);
   } catch (error) {
     const state = knownErrorState(error, values, locale);
     if (state) return state;
@@ -93,13 +95,14 @@ export async function editReleaseItemAction(
   _previous: ReleaseItemFormState,
   formData: FormData,
 ): Promise<ReleaseItemFormState> {
+  const { workspace } = await requireActiveWorkspace();
   const locale = parseLocale(formData.get("locale"));
   const values = readItemForm(formData);
   const parsed = validateItemForm(values, locale);
   if (parsed.state) return parsed.state;
 
   try {
-    await editReleaseItem(releaseId, itemId, parsed.input!);
+    await editReleaseItem(workspace.id, releaseId, itemId, parsed.input!);
   } catch (error) {
     const state = knownErrorState(error, values, locale);
     if (state) return state;
@@ -115,9 +118,10 @@ export async function removeReleaseItemAction(
   itemId: string,
   localeInput: string = "en",
 ): Promise<{ error?: string }> {
+  const { workspace } = await requireActiveWorkspace();
   const locale = parseLocale(localeInput);
   try {
-    await removeReleaseItem(releaseId, itemId);
+    await removeReleaseItem(workspace.id, releaseId, itemId);
   } catch (error) {
     if (error instanceof ReadOnlyDemoError || error instanceof ReleaseItemNotFoundError || error instanceof ReleaseItemsLockedError || error instanceof ReleaseWriteConflictError) {
       return { error: localizeMessage(error.message, locale) };

@@ -15,6 +15,7 @@ import {
   ReleaseVersionTakenError,
 } from "@/server/services/releases";
 import { ReadOnlyDemoError } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 function formValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -24,6 +25,7 @@ export async function createReleaseAction(
   _previous: ReleaseFormState,
   formData: FormData,
 ): Promise<ReleaseFormState> {
+  const { workspace } = await requireActiveWorkspace();
   const locale = parseLocale(formData.get("locale"));
   const values: ReleaseFormValues = {
     projectId: formValue(formData.get("projectId")),
@@ -49,7 +51,7 @@ export async function createReleaseAction(
 
   let created;
   try {
-    created = await createRelease(parsed.data);
+    created = await createRelease(workspace.id, parsed.data);
   } catch (error) {
     if (error instanceof ReadOnlyDemoError) {
       return { values, errors: {}, message: localizeMessage(error.message, locale) };

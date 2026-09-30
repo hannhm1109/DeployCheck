@@ -4,9 +4,11 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { ProjectForm } from "@/features/projects/project-form";
 import { isReadOnlyDemo } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 export default async function NewProjectPage() {
   await connection();
+  await requireActiveWorkspace();
   const [t, nav, common] = await Promise.all([
     getTranslations("Releases"), getTranslations("Nav"), getTranslations("Common"),
   ]);

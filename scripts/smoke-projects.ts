@@ -1,23 +1,13 @@
 import "dotenv/config";
 import assert from "node:assert/strict";
 import { createProjectSchema } from "../src/lib/validation/projects";
-import { createProjectAction } from "../src/server/actions/projects";
 import { getDb } from "../src/server/db";
-import { createProject } from "../src/server/services/projects";
+import { createProject, ProjectSlugTakenError } from "../src/server/services/projects";
 
-const initialState = {
-  values: { name: "", slug: "", description: "" },
-  errors: {},
-};
+const workspaceId = "legacy-workspace";
 
 async function main() {
-  const invalid = new FormData();
-  invalid.set("name", "A");
-  invalid.set("slug", "bad slug");
-  invalid.set("description", "");
-  const invalidResult = await createProjectAction(initialState, invalid);
-  assert.ok(invalidResult.errors.name);
-  assert.ok(invalidResult.errors.slug);
+  assert.equal(createProjectSchema.safeParse({ name: "A", slug: "bad slug", description: "" }).success, false);
 
   const slug = `phase2-check-${Date.now()}`;
   const input = createProjectSchema.parse({
@@ -25,21 +15,12 @@ async function main() {
     slug,
     description: "Temporary integration check",
   });
-  const project = await createProject(input);
+  const project = await createProject(workspaceId, input);
 
   try {
-    const saved = await getDb().project.findUnique({ where: { slug } });
+    const saved = await getDb().project.findUnique({ where: { workspaceId_slug: { workspaceId, slug } } });
     assert.equal(saved?.name, "Phase 2 Check");
-
-    const duplicate = new FormData();
-    duplicate.set("name", "Another Project");
-    duplicate.set("slug", slug);
-    duplicate.set("description", "");
-    const duplicateResult = await createProjectAction(initialState, duplicate);
-    assert.equal(
-      duplicateResult.errors.slug,
-      "A project with this slug already exists.",
-    );
+    await assert.rejects(() => createProject(workspaceId, { ...input, name: "Another Project" }), ProjectSlugTakenError);
   } finally {
     await getDb().project.delete({ where: { id: project.id } });
     await getDb().$disconnect();

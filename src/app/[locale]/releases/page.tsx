@@ -6,11 +6,13 @@ import { formatDate } from "@/lib/format-date";
 import { Link } from "@/i18n/navigation";
 import { listReleases } from "@/server/data/releases";
 import { isReadOnlyDemo } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 export default async function ReleasesPage() {
   await connection();
+  const { workspace } = await requireActiveWorkspace();
   const [releases, locale, t, nav, common] = await Promise.all([
-    listReleases(), getLocale(), getTranslations("Releases"), getTranslations("Nav"), getTranslations("Common"),
+    listReleases(workspace.id), getLocale(), getTranslations("Releases"), getTranslations("Nav"), getTranslations("Common"),
   ]);
   const readOnly = isReadOnlyDemo();
 

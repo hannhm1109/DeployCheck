@@ -1,9 +1,9 @@
 import { Prisma } from "@/generated/prisma/client";
 import { DeploymentResult, ReleaseStatus } from "@/generated/prisma/enums";
 
-export async function getReleaseForTransition(tx: Prisma.TransactionClient, id: string) {
-  const release = await tx.release.findUnique({
-    where: { id },
+export async function getReleaseForTransition(tx: Prisma.TransactionClient, workspaceId: string, id: string) {
+  const release = await tx.release.findFirst({
+    where: { id, project: { workspaceId } },
     select: {
       status: true,
       deployedAt: true,
@@ -26,13 +26,14 @@ export async function getReleaseForTransition(tx: Prisma.TransactionClient, id: 
 
 export function updateReleaseStatus(
   tx: Prisma.TransactionClient,
+  workspaceId: string,
   id: string,
   current: ReleaseStatus,
   next: ReleaseStatus,
   deployedAt: Date | null,
 ) {
   return tx.release.updateMany({
-    where: { id, status: current },
+    where: { id, project: { workspaceId }, status: current },
     data: {
       status: next,
       ...(next === ReleaseStatus.DEPLOYED ? { deployedAt } : {}),

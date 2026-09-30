@@ -4,11 +4,13 @@ import { ArrowUpRight, Plus } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { listProjects } from "@/server/data/projects";
 import { isReadOnlyDemo } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 export default async function ProjectsPage() {
   await connection();
+  const { workspace } = await requireActiveWorkspace();
   const [projects, t, nav, common] = await Promise.all([
-    listProjects(), getTranslations("Projects"), getTranslations("Nav"), getTranslations("Common"),
+    listProjects(workspace.id), getTranslations("Projects"), getTranslations("Nav"), getTranslations("Common"),
   ]);
   const readOnly = isReadOnlyDemo();
 

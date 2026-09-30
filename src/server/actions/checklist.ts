@@ -20,6 +20,7 @@ import {
 } from "@/server/services/checklist";
 import { ReleaseWriteConflictError } from "@/server/services/release-write";
 import { ReadOnlyDemoError } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 function formValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -31,6 +32,7 @@ export async function saveChecklistItemAction(
   _previous: ChecklistFormState,
   formData: FormData,
 ): Promise<ChecklistFormState> {
+  const { workspace } = await requireActiveWorkspace();
   const locale = parseLocale(formData.get("locale"));
   const rawComplete = formData.get("isComplete");
   const values: ChecklistFormValues = {
@@ -59,7 +61,7 @@ export async function saveChecklistItemAction(
   }
 
   try {
-    await saveChecklistItem(releaseId, parsed.data);
+    await saveChecklistItem(workspace.id, releaseId, parsed.data);
   } catch (error) {
     if (error instanceof ReadOnlyDemoError || error instanceof ChecklistLockedError || error instanceof ChecklistReleaseNotFoundError || error instanceof ReleaseWriteConflictError) {
       return { values, errors: {}, message: localizeMessage(error.message, locale) };
@@ -76,13 +78,14 @@ export async function saveRollbackPlanAction(
   _previous: RollbackFormState,
   formData: FormData,
 ): Promise<RollbackFormState> {
+  const { workspace } = await requireActiveWorkspace();
   const locale = parseLocale(formData.get("locale"));
   const value = formValue(formData.get("rollbackNotes"));
   const parsed = rollbackPlanSchema.safeParse(value);
   if (!parsed.success) return { value, error: localizeMessage("Keep the rollback plan under 2,000 characters.", locale) };
 
   try {
-    await saveRollbackPlan(releaseId, parsed.data);
+    await saveRollbackPlan(workspace.id, releaseId, parsed.data);
   } catch (error) {
     if (error instanceof ReadOnlyDemoError || error instanceof ChecklistLockedError || error instanceof ChecklistReleaseNotFoundError || error instanceof ReleaseWriteConflictError) {
       return { value, error: localizeMessage(error.message, locale) };

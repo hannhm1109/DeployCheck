@@ -1,8 +1,9 @@
 import type { CreateProjectInput } from "@/lib/validation/projects";
 import { getDb } from "@/server/db";
 
-export function listProjects() {
+export function listProjects(workspaceId: string) {
   return getDb().project.findMany({
+    where: { workspaceId },
     select: {
       id: true,
       name: true,
@@ -14,9 +15,9 @@ export function listProjects() {
   });
 }
 
-export function getProjectBySlug(slug: string) {
+export function getProjectBySlug(workspaceId: string, slug: string) {
   return getDb().project.findUnique({
-    where: { slug },
+    where: { workspaceId_slug: { workspaceId, slug } },
     include: {
       releases: {
         select: {
@@ -32,20 +33,21 @@ export function getProjectBySlug(slug: string) {
   });
 }
 
-export function getProjectForRelease(id: string) {
-  return getDb().project.findUnique({
-    where: { id },
+export function getProjectForRelease(workspaceId: string, id: string) {
+  return getDb().project.findFirst({
+    where: { id, workspaceId },
     select: { id: true, slug: true },
   });
 }
 
-export function listProjectOptions() {
+export function listProjectOptions(workspaceId: string) {
   return getDb().project.findMany({
+    where: { workspaceId },
     select: { id: true, name: true, slug: true },
     orderBy: { name: "asc" },
   });
 }
 
-export function insertProject(input: CreateProjectInput) {
-  return getDb().project.create({ data: input });
+export function insertProject(workspaceId: string, input: CreateProjectInput) {
+  return getDb().project.create({ data: { ...input, workspaceId } });
 }

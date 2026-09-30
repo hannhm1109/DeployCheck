@@ -24,10 +24,10 @@ const outcomeForStatus: Partial<Record<ReleaseStatus, DeploymentResult>> = {
   ROLLED_BACK: DeploymentResult.ROLLED_BACK,
 };
 
-export async function transitionReleaseStatus(releaseId: string, input: TransitionInput) {
+export async function transitionReleaseStatus(workspaceId: string, releaseId: string, input: TransitionInput) {
   assertDemoWritable();
   return runSerializableTransaction(async (tx) => {
-    const release = await getReleaseForTransition(tx, releaseId);
+    const release = await getReleaseForTransition(tx, workspaceId, releaseId);
     if (!release) throw new ReleaseTransitionNotFoundError();
 
     const occurredAt = new Date();
@@ -43,6 +43,7 @@ export async function transitionReleaseStatus(releaseId: string, input: Transiti
 
     const updated = await updateReleaseStatus(
       tx,
+      workspaceId,
       releaseId,
       release.status,
       input.nextStatus,

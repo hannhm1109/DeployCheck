@@ -15,15 +15,19 @@
     "test:checklist": "tsx scripts/smoke-checklist.ts",
     "test:lifecycle": "tsx scripts/smoke-lifecycle.ts",
     "test:overview": "tsx scripts/smoke-overview.ts",
+    "test:collaboration": "tsx scripts/smoke-collaboration.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:status": "prisma migrate status",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "workspace:claim": "tsx scripts/claim-legacy-workspace.ts"
   },
   "dependencies": {
+    "@better-auth/prisma-adapter": "^1.7.6",
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
+    "better-auth": "^1.7.6",
     "dotenv": "^18.0.4",
     "lucide-react": "^1.48.0",
     "next": "16.3.6",

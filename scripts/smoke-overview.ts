@@ -6,15 +6,17 @@ import { getDb } from "../src/server/db";
 import { listDeploymentHistory } from "../src/server/data/deployments";
 import { getOverview } from "../src/server/data/overview";
 
+const workspaceId = "legacy-workspace";
+
 async function main() {
   const db = getDb();
   const now = new Date();
-  const baseline = await getOverview(now);
+  const baseline = await getOverview(workspaceId, now);
   const slug = `phase7-check-${Date.now()}`;
   let projectId: string | undefined;
 
   try {
-    const project = await db.project.create({ data: { name: "Phase 7 Check", slug } });
+    const project = await db.project.create({ data: { name: "Phase 7 Check", slug, workspaceId } });
     projectId = project.id;
     const targetDeploymentDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 7));
     const ready = await db.release.create({
@@ -46,7 +48,7 @@ async function main() {
       })),
     });
 
-    const overview = await getOverview(now);
+    const overview = await getOverview(workspaceId, now);
     assert.equal(overview.projectCount, baseline.projectCount + 1);
     assert.equal(overview.upcomingCount, baseline.upcomingCount + 1);
     assert.equal(overview.readyCount, baseline.readyCount + 1);
@@ -54,20 +56,20 @@ async function main() {
     assert.ok(overview.recentReleases.some((release) => release.id === ready.id));
     assert.equal(overview.recentDeployments.length, 5);
 
-    const first = await listDeploymentHistory({ releaseId: attempt.id });
-    const second = await listDeploymentHistory({ releaseId: attempt.id, page: 2 });
+    const first = await listDeploymentHistory(workspaceId, { releaseId: attempt.id });
+    const second = await listDeploymentHistory(workspaceId, { releaseId: attempt.id, page: 2 });
     assert.equal(first.total, 22);
     assert.equal(first.pageCount, 2);
     assert.equal(first.deployments.length, 20);
     assert.equal(second.deployments.length, 2);
-    const overflow = await listDeploymentHistory({ releaseId: attempt.id, page: 999 });
+    const overflow = await listDeploymentHistory(workspaceId, { releaseId: attempt.id, page: 999 });
     assert.equal(overflow.page, 2);
     assert.equal(overflow.deployments.length, 2);
     assert.ok(first.deployments[0].occurredAt > second.deployments[0].occurredAt);
-    const failed = await listDeploymentHistory({ releaseId: attempt.id, result: DeploymentResult.FAILED });
+    const failed = await listDeploymentHistory(workspaceId, { releaseId: attempt.id, result: DeploymentResult.FAILED });
     assert.equal(failed.total, 11);
     assert.ok(failed.deployments.every((entry) => entry.result === DeploymentResult.FAILED));
-    const empty = await listDeploymentHistory({ releaseId: ready.id });
+    const empty = await listDeploymentHistory(workspaceId, { releaseId: ready.id });
     assert.equal(empty.total, 0);
     console.log("Phase 7 overview and deployment history smoke checks passed.");
   } finally {

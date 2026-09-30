@@ -7,11 +7,13 @@ import { formatDate, formatDateTime } from "@/lib/format-date";
 import { Link } from "@/i18n/navigation";
 import { getOverview } from "@/server/data/overview";
 import { isReadOnlyDemo } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 export default async function Home() {
   await connection();
+  const { workspace } = await requireActiveWorkspace();
   const [overview, locale, t, nav, common] = await Promise.all([
-    getOverview(), getLocale(), getTranslations("Home"), getTranslations("Nav"), getTranslations("Common"),
+    getOverview(workspace.id), getLocale(), getTranslations("Home"), getTranslations("Nav"), getTranslations("Common"),
   ]);
   const readOnly = isReadOnlyDemo();
   const metrics = [

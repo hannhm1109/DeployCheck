@@ -14,6 +14,7 @@ import {
   ProjectSlugTakenError,
 } from "@/server/services/projects";
 import { ReadOnlyDemoError } from "@/server/demo-access";
+import { requireActiveWorkspace } from "@/server/access";
 
 function formValue(value: FormDataEntryValue | null): string {
   return typeof value === "string" ? value : "";
@@ -23,6 +24,7 @@ export async function createProjectAction(
   _previous: ProjectFormState,
   formData: FormData,
 ): Promise<ProjectFormState> {
+  const { workspace } = await requireActiveWorkspace();
   const locale = parseLocale(formData.get("locale"));
   const values: ProjectFormValues = {
     name: formValue(formData.get("name")),
@@ -47,7 +49,7 @@ export async function createProjectAction(
 
   let project;
   try {
-    project = await createProject(parsed.data);
+    project = await createProject(workspace.id, parsed.data);
   } catch (error) {
     if (error instanceof ReadOnlyDemoError) {
       return { values, errors: {}, message: localizeMessage(error.message, locale) };

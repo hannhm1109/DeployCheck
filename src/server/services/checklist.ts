@@ -25,19 +25,19 @@ function mapChecklistError(error: unknown): never {
   throw error;
 }
 
-export async function saveChecklistItem(releaseId: string, input: ChecklistInput) {
+export async function saveChecklistItem(workspaceId: string, releaseId: string, input: ChecklistInput) {
   assertDemoWritable();
   try {
-    return await withEditableRelease(releaseId, (tx) => upsertChecklistItem(tx, releaseId, input));
+    return await withEditableRelease(workspaceId, releaseId, (tx) => upsertChecklistItem(tx, releaseId, input));
   } catch (error) {
     mapChecklistError(error);
   }
 }
 
-export async function saveRollbackPlan(releaseId: string, rollbackNotes: string | null) {
+export async function saveRollbackPlan(workspaceId: string, releaseId: string, rollbackNotes: string | null) {
   assertDemoWritable();
   try {
-    return await withEditableRelease(releaseId, (tx) => updateRollbackPlan(tx, releaseId, rollbackNotes));
+    return await withEditableRelease(workspaceId, releaseId, (tx) => updateRollbackPlan(tx, releaseId, rollbackNotes));
   } catch (error) {
     mapChecklistError(error);
   }

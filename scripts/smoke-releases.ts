@@ -1,33 +1,14 @@
 import "dotenv/config";
 import assert from "node:assert/strict";
-import { createReleaseAction } from "../src/server/actions/releases";
 import { REQUIRED_CHECKS } from "../src/lib/domain/releases/readiness";
 import { createReleaseSchema } from "../src/lib/validation/releases";
 import { getDb } from "../src/server/db";
-import { createRelease } from "../src/server/services/releases";
+import { createRelease, ReleaseProjectNotFoundError, ReleaseVersionTakenError } from "../src/server/services/releases";
 
-const emptyState = {
-  values: {
-    projectId: "",
-    version: "",
-    title: "",
-    description: "",
-    targetDeploymentDate: "",
-    rollbackNotes: "",
-  },
-  errors: {},
-};
+const workspaceId = "legacy-workspace";
 
 async function main() {
-  const invalid = new FormData();
-  invalid.set("version", "bad version");
-  invalid.set("title", "A");
-  invalid.set("targetDeploymentDate", "2026-02-30");
-  const invalidResult = await createReleaseAction(emptyState, invalid);
-  assert.ok(invalidResult.errors.projectId);
-  assert.ok(invalidResult.errors.version);
-  assert.ok(invalidResult.errors.title);
-  assert.ok(invalidResult.errors.targetDeploymentDate);
+  assert.equal(createReleaseSchema.safeParse({ projectId: "", version: "bad version", title: "A", description: "", targetDeploymentDate: "2026-02-30", rollbackNotes: "" }).success, false);
 
   const db = getDb();
   const slug = `phase3-check-${Date.now()}`;
@@ -35,7 +16,7 @@ async function main() {
   let releaseId: string | undefined;
   try {
     const project = await db.project.create({
-      data: { name: "Phase 3 Check", slug },
+      data: { name: "Phase 3 Check", slug, workspaceId },
     });
     projectId = project.id;
     const input = createReleaseSchema.parse({
@@ -46,7 +27,7 @@ async function main() {
       targetDeploymentDate: "2026-10-15",
       rollbackNotes: "Restore the previous image",
     });
-    const { release } = await createRelease(input);
+    const { release } = await createRelease(workspaceId, input);
     releaseId = release.id;
 
     const saved = await db.release.findUnique({
@@ -61,19 +42,8 @@ async function main() {
     );
     assert.ok(saved?.checklistItems.every((item) => !item.isComplete));
 
-    const duplicate = new FormData();
-    duplicate.set("projectId", projectId);
-    duplicate.set("version", "v1.0.0");
-    duplicate.set("title", "Another release");
-    const duplicateResult = await createReleaseAction(emptyState, duplicate);
-    assert.equal(duplicateResult.errors.version, "This version already exists in the selected project.");
-
-    const missing = new FormData();
-    missing.set("projectId", "missing-project");
-    missing.set("version", "v2.0.0");
-    missing.set("title", "Another release");
-    const missingResult = await createReleaseAction(emptyState, missing);
-    assert.equal(missingResult.errors.projectId, "The selected project no longer exists.");
+    await assert.rejects(() => createRelease(workspaceId, { ...input, title: "Another release" }), ReleaseVersionTakenError);
+    await assert.rejects(() => createRelease(workspaceId, { ...input, projectId: "missing-project", version: "v2.0.0" }), ReleaseProjectNotFoundError);
   } finally {
     if (releaseId) {
       await db.releaseChecklistItem.deleteMany({ where: { releaseId } });

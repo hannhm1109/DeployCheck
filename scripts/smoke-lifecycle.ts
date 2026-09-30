@@ -5,14 +5,19 @@ import { REQUIRED_CHECKS } from "../src/lib/domain/releases/readiness";
 import { checklistInputSchema } from "../src/lib/validation/checklist";
 import { createReleaseSchema } from "../src/lib/validation/releases";
 import { transitionInputSchema } from "../src/lib/validation/lifecycle";
-import { transitionReleaseAction } from "../src/server/actions/lifecycle";
 import { getDb } from "../src/server/db";
-import { saveChecklistItem, saveRollbackPlan } from "../src/server/services/checklist";
-import { createRelease } from "../src/server/services/releases";
+import { saveChecklistItem as saveChecklistItemForWorkspace, saveRollbackPlan as saveRollbackPlanForWorkspace } from "../src/server/services/checklist";
+import { createRelease as createReleaseForWorkspace } from "../src/server/services/releases";
 import {
   ReleaseTransitionRejectedError,
-  transitionReleaseStatus,
+  transitionReleaseStatus as transitionReleaseStatusForWorkspace,
 } from "../src/server/services/lifecycle";
+
+const workspaceId = "legacy-workspace";
+const createRelease = (input: Parameters<typeof createReleaseForWorkspace>[1]) => createReleaseForWorkspace(workspaceId, input);
+const saveChecklistItem = (releaseId: string, input: Parameters<typeof saveChecklistItemForWorkspace>[2]) => saveChecklistItemForWorkspace(workspaceId, releaseId, input);
+const saveRollbackPlan = (releaseId: string, notes: string | null) => saveRollbackPlanForWorkspace(workspaceId, releaseId, notes);
+const transitionReleaseStatus = (releaseId: string, input: Parameters<typeof transitionReleaseStatusForWorkspace>[2]) => transitionReleaseStatusForWorkspace(workspaceId, releaseId, input);
 
 async function main() {
   const db = getDb();
@@ -50,10 +55,9 @@ async function main() {
   }
 
   try {
-    const invalid = await transitionReleaseAction("missing", "PUBLISHED", {}, new FormData());
-    assert.match(invalid.error ?? "", /valid status/);
+    assert.equal(transitionInputSchema.safeParse({ nextStatus: "PUBLISHED", notes: "" }).success, false);
 
-    const project = await db.project.create({ data: { name: "Phase 6 Check", slug } });
+    const project = await db.project.create({ data: { name: "Phase 6 Check", slug, workspaceId } });
     projectId = project.id;
 
     const successId = await createTestRelease("v1.0.0");

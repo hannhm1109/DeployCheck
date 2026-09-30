@@ -35,19 +35,19 @@ function mapItemError(error: unknown): never {
   throw error;
 }
 
-export async function addReleaseItem(releaseId: string, input: ReleaseItemInput) {
+export async function addReleaseItem(workspaceId: string, releaseId: string, input: ReleaseItemInput) {
   assertDemoWritable();
   try {
-    return await withEditableRelease(releaseId, (tx) => insertReleaseItem(tx, releaseId, input));
+    return await withEditableRelease(workspaceId, releaseId, (tx) => insertReleaseItem(tx, releaseId, input));
   } catch (error) {
     mapItemError(error);
   }
 }
 
-export async function editReleaseItem(releaseId: string, itemId: string, input: ReleaseItemInput) {
+export async function editReleaseItem(workspaceId: string, releaseId: string, itemId: string, input: ReleaseItemInput) {
   assertDemoWritable();
   try {
-    await withEditableRelease(releaseId, async (tx) => {
+    await withEditableRelease(workspaceId, releaseId, async (tx) => {
       const result = await updateReleaseItem(tx, releaseId, itemId, input);
       if (result.count === 0) throw new ReleaseItemNotFoundError();
     });
@@ -56,10 +56,10 @@ export async function editReleaseItem(releaseId: string, itemId: string, input: 
   }
 }
 
-export async function removeReleaseItem(releaseId: string, itemId: string) {
+export async function removeReleaseItem(workspaceId: string, releaseId: string, itemId: string) {
   assertDemoWritable();
   try {
-    await withEditableRelease(releaseId, async (tx) => {
+    await withEditableRelease(workspaceId, releaseId, async (tx) => {
       const result = await deleteReleaseItem(tx, releaseId, itemId);
       if (result.count === 0) throw new ReleaseItemNotFoundError();
     });

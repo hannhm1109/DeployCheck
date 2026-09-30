@@ -2,8 +2,9 @@ import type { ChecklistKind } from "@/generated/prisma/enums";
 import type { CreateReleaseInput } from "@/lib/validation/releases";
 import { getDb } from "@/server/db";
 
-export function listReleases() {
+export function listReleases(workspaceId: string) {
   return getDb().release.findMany({
+    where: { project: { workspaceId } },
     select: {
       id: true,
       version: true,
@@ -16,9 +17,9 @@ export function listReleases() {
   });
 }
 
-export function getReleaseById(id: string) {
-  return getDb().release.findUnique({
-    where: { id },
+export function getReleaseById(workspaceId: string, id: string) {
+  return getDb().release.findFirst({
+    where: { id, project: { workspaceId } },
     include: {
       project: { select: { name: true, slug: true } },
       items: { orderBy: [{ createdAt: "asc" }, { id: "asc" }] },
@@ -35,12 +36,15 @@ export function getReleaseById(id: string) {
 }
 
 export function insertRelease(
+  workspaceId: string,
   input: CreateReleaseInput,
   checklistKinds: readonly ChecklistKind[],
 ) {
+  const { projectId, ...values } = input;
   return getDb().release.create({
     data: {
-      ...input,
+      ...values,
+      project: { connect: { id: projectId, workspaceId } },
       checklistItems: {
         create: checklistKinds.map((kind) => ({ kind })),
       },

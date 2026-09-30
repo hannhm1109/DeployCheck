@@ -9,10 +9,10 @@ export class ProjectSlugTakenError extends Error {
   }
 }
 
-export async function createProject(input: CreateProjectInput) {
+export async function createProject(workspaceId: string, input: CreateProjectInput) {
   assertDemoWritable();
   try {
-    return await insertProject(input);
+    return await insertProject(workspaceId, input);
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
