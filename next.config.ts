@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     : [],
   distDir: process.env.VERCEL
     ? ".next"
-    : process.env.NODE_ENV === "production" ? ".next-build" : ".next-dev",
+    : process.env.NODE_ENV === "production" ? ".next-build" : ".next-dev-local",
 };
 
 export default createNextIntlPlugin()(nextConfig);
