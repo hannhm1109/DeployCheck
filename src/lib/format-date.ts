@@ -1,5 +1,5 @@
-export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatDate(date: Date, locale: string = "en"): string {
+  return new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -7,8 +7,8 @@ export function formatDate(date: Date): string {
   }).format(date);
 }
 
-export function formatDateTime(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatDateTime(date: Date, locale: string = "en"): string {
+  return new Intl.DateTimeFormat(locale === "fr" ? "fr-FR" : "en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",

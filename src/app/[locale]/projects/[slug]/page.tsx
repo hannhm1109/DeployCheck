@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { ArrowLeft, Plus } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { ReleaseStatusBadge } from "@/features/releases/status-badge";
 import { formatDate } from "@/lib/format-date";
 import { getProjectBySlug } from "@/server/data/projects";
@@ -16,6 +17,9 @@ export default async function ProjectDetailPage({
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
+  const [locale, t, nav, common] = await Promise.all([
+    getLocale(), getTranslations("Projects"), getTranslations("Nav"), getTranslations("Common"),
+  ]);
   const readOnly = isReadOnlyDemo();
 
   return (
@@ -25,7 +29,7 @@ export default async function ProjectDetailPage({
         className="inline-flex items-center gap-2 text-sm font-medium text-[#60736a] hover:text-[#0d6b57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f7663]"
       >
         <ArrowLeft size={16} aria-hidden="true" />
-        Projects
+        {nav("projects")}
       </Link>
 
       <header className="mt-7 border-b border-[#dce5df] pb-7">
@@ -46,15 +50,15 @@ export default async function ProjectDetailPage({
         <section aria-labelledby="releases-heading" className="min-w-0">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
             <h2 id="releases-heading" className="text-lg font-semibold text-[#1b3029]">
-              Releases <span className="ml-1 text-sm font-normal tabular-nums text-[#64746e]">{project.releases.length}</span>
+              {nav("releases")} <span className="ml-1 text-sm font-normal tabular-nums text-[#64746e]">{project.releases.length}</span>
             </h2>
             {!readOnly && <Link href={`/releases/new?project=${encodeURIComponent(project.slug)}`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#0d6b57] hover:underline">
-              <Plus size={16} aria-hidden="true" /> New release
+              <Plus size={16} aria-hidden="true" /> {common("newRelease")}
             </Link>}
           </div>
           {project.releases.length === 0 ? (
             <div className="border-y border-[#d9e2dd] py-12 text-sm text-[#6b7d72]">
-              No releases recorded for this project.
+              {t("noReleases")}
             </div>
           ) : (
             <ul className="divide-y divide-[#e5ebe7] border border-[#dce5df] bg-white">
@@ -68,7 +72,7 @@ export default async function ProjectDetailPage({
                     <div className="flex items-center gap-3">
                     {release.targetDeploymentDate && (
                       <span className="hidden whitespace-nowrap text-xs text-[#76877d] sm:inline">
-                        {formatDate(release.targetDeploymentDate)}
+                        {formatDate(release.targetDeploymentDate, locale)}
                       </span>
                     )}
                       <ReleaseStatusBadge status={release.status} />
@@ -81,18 +85,18 @@ export default async function ProjectDetailPage({
         </section>
 
         <aside className="border-t border-[#d9e2dd] pt-6 lg:border-t-0 lg:border-l lg:pl-8 lg:pt-0">
-          <h2 className="text-sm font-semibold text-[#263b31]">Project details</h2>
+          <h2 className="text-sm font-semibold text-[#263b31]">{t("details")}</h2>
           <dl className="mt-5 space-y-5 text-sm">
             <div>
-              <dt className="text-[#64746e]">Created</dt>
+              <dt className="text-[#64746e]">{t("created")}</dt>
               <dd className="mt-1 font-medium text-[#2a3d33]">
-                {formatDate(project.createdAt)}
+                {formatDate(project.createdAt, locale)}
               </dd>
             </div>
             <div>
-              <dt className="text-[#64746e]">Last updated</dt>
+              <dt className="text-[#64746e]">{t("updated")}</dt>
               <dd className="mt-1 font-medium text-[#2a3d33]">
-                {formatDate(project.updatedAt)}
+                {formatDate(project.updatedAt, locale)}
               </dd>
             </div>
           </dl>

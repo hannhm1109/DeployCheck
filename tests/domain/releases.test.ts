@@ -52,6 +52,7 @@ describe("release readiness", () => {
 
     expect(getReleaseBlockers(release)).toContainEqual({
       code: "CHECK_MISSING",
+      kind: ChecklistKind.QA_VALIDATED,
       message: "QA validation is missing",
     });
   });
@@ -88,6 +89,7 @@ describe("release readiness", () => {
     expect(calculateReleaseReadiness(release).isReady).toBe(false);
     expect(getReleaseBlockers(release)).toContainEqual({
       code: "CHANGE_REQUIREMENT_UNKNOWN",
+      kind: ChecklistKind.DATABASE_MIGRATION_CHECKED,
       message: "Database migration check has no change decision",
     });
   });

@@ -42,15 +42,10 @@ export type ReleaseReadinessInput = {
   rollbackNotes: string | null;
 };
 
-export type ReleaseBlocker = {
-  code:
-    | "CHECK_MISSING"
-    | "CHECK_INCOMPLETE"
-    | "CHANGE_REQUIREMENT_UNKNOWN"
-    | "ROLLBACK_PLAN_MISSING"
-    | "ITEM_NOT_READY";
-  message: string;
-};
+export type ReleaseBlocker =
+  | { code: "CHECK_MISSING" | "CHECK_INCOMPLETE" | "CHANGE_REQUIREMENT_UNKNOWN"; kind: ChecklistKind; message: string }
+  | { code: "ROLLBACK_PLAN_MISSING"; message: string }
+  | { code: "ITEM_NOT_READY"; reference: string; status: ReleaseItemStatus; message: string };
 
 export function getReleaseBlockers(
   release: ReleaseReadinessInput,
@@ -64,6 +59,7 @@ export function getReleaseBlockers(
     if (!check) {
       blockers.push({
         code: "CHECK_MISSING",
+        kind,
         message: `${CHECK_LABELS[kind]} is missing`,
       });
       continue;
@@ -72,6 +68,7 @@ export function getReleaseBlockers(
     if (!check.isComplete) {
       blockers.push({
         code: "CHECK_INCOMPLETE",
+        kind,
         message: `${CHECK_LABELS[kind]} is incomplete`,
       });
     }
@@ -79,6 +76,7 @@ export function getReleaseBlockers(
     if (requiresChangeDecision(kind) && check.changeRequired === null) {
       blockers.push({
         code: "CHANGE_REQUIREMENT_UNKNOWN",
+        kind,
         message: `${CHECK_LABELS[kind]} has no change decision`,
       });
     }
@@ -95,6 +93,8 @@ export function getReleaseBlockers(
     if (item.status !== ReleaseItemStatus.READY) {
       blockers.push({
         code: "ITEM_NOT_READY",
+        reference: item.externalReference,
+        status: item.status,
         message: `${item.externalReference} is not ready (${item.status})`,
       });
     }

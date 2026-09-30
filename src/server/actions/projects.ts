@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { localizeIssue, localizeMessage } from "@/i18n/action-messages";
+import { localePath, parseLocale } from "@/i18n/routing";
 import {
   createProjectSchema,
   type ProjectFormState,
@@ -21,6 +23,7 @@ export async function createProjectAction(
   _previous: ProjectFormState,
   formData: FormData,
 ): Promise<ProjectFormState> {
+  const locale = parseLocale(formData.get("locale"));
   const values: ProjectFormValues = {
     name: formValue(formData.get("name")),
     slug: formValue(formData.get("slug")),
@@ -36,7 +39,7 @@ export async function createProjectAction(
         (field === "name" || field === "slug" || field === "description") &&
         !errors[field]
       ) {
-        errors[field] = issue.message;
+        errors[field] = localizeIssue(issue, locale);
       }
     }
     return { values, errors };
@@ -47,14 +50,14 @@ export async function createProjectAction(
     project = await createProject(parsed.data);
   } catch (error) {
     if (error instanceof ReadOnlyDemoError) {
-      return { values, errors: {}, message: error.message };
+      return { values, errors: {}, message: localizeMessage(error.message, locale) };
     }
     if (error instanceof ProjectSlugTakenError) {
-      return { values, errors: { slug: error.message } };
+      return { values, errors: { slug: localizeMessage(error.message, locale) } };
     }
     throw error;
   }
 
-  revalidatePath("/projects");
-  redirect(`/projects/${project.slug}`);
+  revalidatePath(localePath(locale, "/projects"));
+  redirect(localePath(locale, `/projects/${project.slug}`));
 }

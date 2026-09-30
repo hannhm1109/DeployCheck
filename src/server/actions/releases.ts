@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { localizeIssue, localizeMessage } from "@/i18n/action-messages";
+import { localePath, parseLocale } from "@/i18n/routing";
 import {
   createReleaseSchema,
   type ReleaseFormState,
@@ -22,6 +24,7 @@ export async function createReleaseAction(
   _previous: ReleaseFormState,
   formData: FormData,
 ): Promise<ReleaseFormState> {
+  const locale = parseLocale(formData.get("locale"));
   const values: ReleaseFormValues = {
     projectId: formValue(formData.get("projectId")),
     version: formValue(formData.get("version")),
@@ -38,7 +41,7 @@ export async function createReleaseAction(
       const field = issue.path[0];
       if (typeof field === "string" && field in values) {
         const key = field as keyof ReleaseFormValues;
-        errors[key] ??= issue.message;
+        errors[key] ??= localizeIssue(issue, locale);
       }
     }
     return { values, errors };
@@ -49,19 +52,19 @@ export async function createReleaseAction(
     created = await createRelease(parsed.data);
   } catch (error) {
     if (error instanceof ReadOnlyDemoError) {
-      return { values, errors: {}, message: error.message };
+      return { values, errors: {}, message: localizeMessage(error.message, locale) };
     }
     if (error instanceof ReleaseVersionTakenError) {
-      return { values, errors: { version: error.message } };
+      return { values, errors: { version: localizeMessage(error.message, locale) } };
     }
     if (error instanceof ReleaseProjectNotFoundError) {
-      return { values, errors: { projectId: error.message } };
+      return { values, errors: { projectId: localizeMessage(error.message, locale) } };
     }
     throw error;
   }
 
-  revalidatePath("/releases");
-  revalidatePath("/projects");
-  revalidatePath(`/projects/${created.projectSlug}`);
-  redirect(`/releases/${created.release.id}`);
+  revalidatePath(localePath(locale, "/releases"));
+  revalidatePath(localePath(locale, "/projects"));
+  revalidatePath(localePath(locale, `/projects/${created.projectSlug}`));
+  redirect(localePath(locale, `/releases/${created.release.id}`));
 }

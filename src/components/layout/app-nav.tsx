@@ -1,30 +1,32 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 
 const links = [
-  { href: "/", label: "Overview" },
-  { href: "/projects", label: "Projects" },
-  { href: "/releases", label: "Releases" },
-  { href: "/deployments", label: "History" },
-];
+  { href: "/", key: "overview" },
+  { href: "/projects", key: "projects" },
+  { href: "/releases", key: "releases" },
+  { href: "/deployments", key: "history" },
+  { href: "/about", key: "about" },
+] as const;
 
 export function AppNav() {
   const pathname = usePathname();
+  const t = useTranslations("Nav");
 
   return (
-    <nav aria-label="Main navigation" className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start sm:gap-7">
-      {links.map(({ href, label }) => {
+    <nav aria-label={t("main")} className="order-3 col-span-2 flex w-full items-center gap-4 overflow-x-auto whitespace-nowrap sm:order-0 sm:col-span-1 sm:w-auto sm:justify-self-end sm:gap-6">
+      {links.map(({ href, key }) => {
         const active = href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link
             key={href}
             href={href}
             aria-current={active ? "page" : undefined}
-            className={`inline-flex h-11 items-center border-b-2 px-1 text-[13px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f7663] sm:h-[68px] ${active ? "border-[#0b7059] text-[#174c3d]" : "border-transparent text-[#607269] hover:text-[#174c3d]"}`}
+            className={`inline-flex h-11 shrink-0 items-center border-b-2 px-1 text-[13px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0f7663] sm:h-[68px] ${active ? "border-[#0b7059] text-[#174c3d]" : "border-transparent text-[#607269] hover:text-[#174c3d]"}`}
           >
-            {label}
+            {t(key)}
           </Link>
         );
       })}

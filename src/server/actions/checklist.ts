@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { localizeIssue, localizeMessage } from "@/i18n/action-messages";
+import { localePath, parseLocale } from "@/i18n/routing";
 import { ChecklistKind } from "@/generated/prisma/enums";
 import {
   checklistInputSchema,
@@ -29,6 +31,7 @@ export async function saveChecklistItemAction(
   _previous: ChecklistFormState,
   formData: FormData,
 ): Promise<ChecklistFormState> {
+  const locale = parseLocale(formData.get("locale"));
   const rawComplete = formData.get("isComplete");
   const values: ChecklistFormValues = {
     isComplete: rawComplete === "true",
@@ -47,9 +50,9 @@ export async function saveChecklistItemAction(
     for (const issue of parsed.error.issues) {
       const field = issue.path[0];
       if (field === "isComplete" || field === "changeRequired" || field === "notes") {
-        errors[field] ??= issue.message;
+        errors[field] ??= localizeIssue(issue, locale);
       } else {
-        message = "This check is not recognized.";
+        message = localizeMessage("This check is not recognized.", locale);
       }
     }
     return { values, errors, message };
@@ -59,13 +62,13 @@ export async function saveChecklistItemAction(
     await saveChecklistItem(releaseId, parsed.data);
   } catch (error) {
     if (error instanceof ReadOnlyDemoError || error instanceof ChecklistLockedError || error instanceof ChecklistReleaseNotFoundError || error instanceof ReleaseWriteConflictError) {
-      return { values, errors: {}, message: error.message };
+      return { values, errors: {}, message: localizeMessage(error.message, locale) };
     }
     throw error;
   }
 
-  revalidatePath(`/releases/${releaseId}`);
-  redirect(`/releases/${releaseId}#checklist`);
+  revalidatePath(localePath(locale, `/releases/${releaseId}`));
+  redirect(localePath(locale, `/releases/${releaseId}#checklist`));
 }
 
 export async function saveRollbackPlanAction(
@@ -73,19 +76,20 @@ export async function saveRollbackPlanAction(
   _previous: RollbackFormState,
   formData: FormData,
 ): Promise<RollbackFormState> {
+  const locale = parseLocale(formData.get("locale"));
   const value = formValue(formData.get("rollbackNotes"));
   const parsed = rollbackPlanSchema.safeParse(value);
-  if (!parsed.success) return { value, error: "Keep the rollback plan under 2,000 characters." };
+  if (!parsed.success) return { value, error: localizeMessage("Keep the rollback plan under 2,000 characters.", locale) };
 
   try {
     await saveRollbackPlan(releaseId, parsed.data);
   } catch (error) {
     if (error instanceof ReadOnlyDemoError || error instanceof ChecklistLockedError || error instanceof ChecklistReleaseNotFoundError || error instanceof ReleaseWriteConflictError) {
-      return { value, error: error.message };
+      return { value, error: localizeMessage(error.message, locale) };
     }
     throw error;
   }
 
-  revalidatePath(`/releases/${releaseId}`);
-  redirect(`/releases/${releaseId}#rollback`);
+  revalidatePath(localePath(locale, `/releases/${releaseId}`));
+  redirect(localePath(locale, `/releases/${releaseId}#rollback`));
 }

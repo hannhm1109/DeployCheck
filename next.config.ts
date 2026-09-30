@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: process.env.DEV_ALLOWED_ORIGIN
@@ -9,4 +10,4 @@ const nextConfig: NextConfig = {
     : process.env.NODE_ENV === "production" ? ".next-build" : ".next-dev",
 };
 
-export default nextConfig;
+export default createNextIntlPlugin()(nextConfig);

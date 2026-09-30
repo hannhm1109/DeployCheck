@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { localizeMessage } from "@/i18n/action-messages";
+import { localePath, parseLocale } from "@/i18n/routing";
 import { transitionInputSchema, type TransitionFormState } from "@/lib/validation/lifecycle";
 import {
   ReleaseTransitionNotFoundError,
@@ -17,13 +19,14 @@ export async function transitionReleaseAction(
   _previous: TransitionFormState,
   formData: FormData,
 ): Promise<TransitionFormState> {
+  const locale = parseLocale(formData.get("locale"));
   const rawNotes = formData.get("notes");
   const parsed = transitionInputSchema.safeParse({
     nextStatus,
     notes: typeof rawNotes === "string" ? rawNotes : "",
   });
   if (!parsed.success) {
-    return { error: "Choose a valid status and keep notes under 1,000 characters." };
+    return { error: localizeMessage("Choose a valid status and keep notes under 1,000 characters.", locale) };
   }
 
   let projectSlug: string;
@@ -32,14 +35,14 @@ export async function transitionReleaseAction(
     projectSlug = result.projectSlug;
   } catch (error) {
     if (error instanceof ReadOnlyDemoError || error instanceof ReleaseTransitionNotFoundError || error instanceof ReleaseTransitionRejectedError || error instanceof ReleaseWriteConflictError) {
-      return { error: error.message };
+      return { error: localizeMessage(error.message, locale) };
     }
     throw error;
   }
 
-  revalidatePath(`/releases/${releaseId}`);
-  revalidatePath("/releases");
-  revalidatePath("/projects");
-  revalidatePath(`/projects/${projectSlug}`);
-  redirect(`/releases/${releaseId}#lifecycle`);
+  revalidatePath(localePath(locale, `/releases/${releaseId}`));
+  revalidatePath(localePath(locale, "/releases"));
+  revalidatePath(localePath(locale, "/projects"));
+  revalidatePath(localePath(locale, `/projects/${projectSlug}`));
+  redirect(localePath(locale, `/releases/${releaseId}#lifecycle`));
 }

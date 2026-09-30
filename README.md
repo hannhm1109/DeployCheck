@@ -1,125 +1,76 @@
 # DeployCheck
 
-DeployCheck is a lightweight release-readiness and deployment tracking tool for small software teams. It brings release tickets, deployment checks, rollback plans, and deployment history into one workflow.
+DeployCheck is a release-readiness and deployment tracking app for small software teams. It keeps projects, releases, included tickets, deployment checks, rollback plans, and deployment outcomes in one place. Unlike a general issue tracker, it focuses on the decision to ship a specific release and on recording what happened afterward.
 
-## Current status
+## What you can do
 
-Phase 9 deployment preparation is complete. The app is ready for a managed PostgreSQL database and a Vercel project, but no live deployment exists until those external resources are connected. Public production builds are read-only by default because authentication is outside this MVP. See the [deployment guide](docs/deployment.md).
+- Create projects and versioned releases with target deployment dates.
+- Add release tickets and track their readiness.
+- Complete five deployment checks and document a rollback plan.
+- See a deterministic readiness result with actionable blockers.
+- Move a release through controlled review, deployment, failure, and rollback states.
+- Review recent activity and filter deployment history.
+- Use the interface in English or French. English URLs are unprefixed; French URLs start with `/fr` (for example, `/fr/releases`). The language switch keeps you on the corresponding page.
 
-## MVP workflow
+The app does not deploy software for you or replace an issue tracker. Authentication, issue-tracker integrations, notifications, and automated deployments are outside the current scope. Public production builds are read-only by default until authentication is added; local development remains writable.
 
-1. Create a project and a versioned release.
-2. Add the tickets included in that release and track their readiness.
-3. Complete required deployment checks and document a rollback plan.
-4. Review a deterministic readiness result with specific blockers.
-5. Move the release through intentional status transitions and record deployment outcomes.
-6. Browse recent releases and deployment history.
-
-The MVP excludes authentication, external issue tracker integrations, automated deployments, notifications, and analytics.
-
-## Architecture
-
-The request path is:
+## How it works
 
 ```text
-Next.js UI -> Server Actions -> services and domain rules -> data access -> Prisma -> PostgreSQL
+Next.js UI -> Server Actions -> services and domain rules -> Prisma -> PostgreSQL
 ```
 
-Project and release forms call Server Actions that validate input with Zod, pass it through a service, and then use Prisma data access. Duplicate project slugs and release versions are reported on their forms. Release creation initializes required checks in the same database write. Route Handlers will be added only when an external caller or webhook needs an HTTP endpoint. Readiness and transition rules are pure functions outside React components and are enforced again on every status change.
+Forms use Server Actions with Zod validation. Services enforce edit permissions and lifecycle transitions before writing through Prisma. Readiness is calculated from current tickets, checklist rows, and rollback notes rather than stored as a flag or inferred by AI. Status changes are checked again on the server, and deployment outcomes are written in the same transaction as their status change.
 
-Release-item actions follow the same path. They normalize external references, enforce uniqueness within a release, scope edits and removals to that release, and permit changes only while the release is `DRAFT` or `IN_REVIEW`. Readiness is recalculated from current database rows rather than stored as a potentially stale flag.
+`Project` owns `Release` records. A release owns its `ReleaseItem` tickets, `ReleaseChecklistItem` checks, and `Deployment` outcomes. Project slugs are unique, and release versions are unique within a project. Ticket references are unique within a release.
 
-Checklist and rollback-plan actions use the same edit guard. The five checklist kinds are stored as separate rows, with a yes/no/undecided change decision for migration, environment, and background-job checks. The readiness view reads persisted checks and tickets, applies the pure domain calculation, and links each blocker to the section that can resolve it.
+A release is ready when all five required checks are complete, migration/environment/background-job decisions are recorded, all included tickets are ready, and rollback notes exist. A release with no tickets can still be ready. The usual lifecycle is `DRAFT -> IN_REVIEW -> READY -> DEPLOYING -> DEPLOYED`; review can return to draft, ready can return to review, deploying can fail, and failed or deployed releases can be rolled back.
 
-Lifecycle changes run in a serializable database transaction. The service rechecks current readiness and status, updates the release, and records any deployment outcome atomically. Concurrent-write conflicts are retried. Ticket and checklist writes also lock the parent release in a transaction, so an edit cannot slip across the point where a release becomes ready.
-
-The overview and history pages query PostgreSQL directly from Server Components. Upcoming releases are active releases with a target date today or later (UTC); ready-to-deploy counts only `READY` releases that still pass the domain readiness calculation. The 30-day deployment count is based on outcome timestamps, not release status. History pages show 20 outcomes at a time, newest first.
-
-Planned structure as features are implemented:
+Key directories:
 
 ```text
-src/app/                  Pages and layouts
+messages/                  English and French UI text
+src/app/[locale]/          Localized pages and layouts
 src/components/           Shared UI
-src/features/             Project, release, item, and deployment UI
+src/features/             Project, release, and deployment UI
+src/i18n/                 Locale routing and navigation
 src/lib/domain/releases/  Pure readiness and transition rules
 src/lib/validation/       Input schemas
 src/server/actions/       Server Action entry points
 src/server/services/      Application workflows
 src/server/data/          Prisma queries
 prisma/                   Schema, migrations, and seed data
-tests/domain/             Business-rule tests
+tests/                    Domain and database smoke tests
 ```
 
-## Data model
+## Run locally
 
-- `Project` has many `Release` records; its slug is unique.
-- `Release` belongs to a project and has many `ReleaseItem`, `ReleaseChecklistItem`, and `Deployment` records. Version is unique within a project.
-- `ReleaseItem` tracks an external reference, type, readiness status, and notes.
-- `ReleaseChecklistItem` tracks a required check, completion state, optional notes, and a yes/no `changeRequired` decision for migrations, environment variables, and background jobs.
-- `Deployment` records the time, outcome, and optional notes for a deployment attempt.
-
-## Core rules
-
-- A release is ready only when all five checks exist and are complete, migration/environment/job decisions are recorded, all included items are ready, and rollback notes are present. A release with no tickets can still be ready.
-- Tickets can be changed only while their release is in draft or review. Their references are unique within a release, not across projects or releases.
-- A completed migration, environment, or background-job check still blocks readiness until its change decision is recorded. Rollback notes and the rollback-plan check are separate requirements.
-- The readiness result includes completion counts and specific blockers.
-- The intended path is `DRAFT -> IN_REVIEW -> READY -> DEPLOYING -> DEPLOYED`. Review can return to draft, ready can return to review, deploying can fail, and failed or deployed releases can be rolled back.
-- Entering `READY` or `DEPLOYING` requires current readiness. Entering `DEPLOYED` requires a deployment timestamp.
-- Successful deployment, failed deployment, and rollback each create a separate outcome record. `deployedAt` is set together with a successful outcome; the seed includes a success and a failure followed by rollback.
-
-The pure functions and their tests are in `src/lib/domain/releases/` and `tests/domain/`. Lifecycle services enforce them before any status write.
-
-## Stack and local setup
-
-The project uses Next.js App Router, TypeScript, Tailwind CSS, PostgreSQL, Prisma 7, Zod, Lucide icons, ESLint, and Vitest. Forms use React's `useActionState` for validation feedback without a separate form library.
-
-Development and production builds use separate ignored output directories (`.next-dev` and `.next-build`) so they do not contend for generated files on synced Windows workspaces.
-
-Hosted runtime queries use `DATABASE_URL`, preferably a pooled PostgreSQL connection string. Prisma CLI commands use `DIRECT_URL` when provided, so migrations can use a direct connection. `npm run db:deploy` applies committed migrations in a deployment environment; seeding is a separate, deliberate step. On Vercel, the build uses the standard `.next` directory.
-
-Start Docker Desktop, then create the local PostgreSQL container once:
+You need Node.js and Docker Desktop. The included commands use a local PostgreSQL container. Start Docker Desktop, then create it once:
 
 ```powershell
-docker run -d --name deploycheck-phase1-postgres --restart unless-stopped -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=deploycheck -p 127.0.0.1:55432:5432 postgres:17-alpine
+docker run -d --name deploycheck-postgres --restart unless-stopped -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=deploycheck -p 127.0.0.1:55432:5432 postgres:17-alpine
 ```
 
-If that container already exists, do not recreate it; use `docker start deploycheck-phase1-postgres`. You can enable automatic container restart for an existing installation with `docker update --restart unless-stopped deploycheck-phase1-postgres`. Docker Desktop itself must still be running. Then configure and initialize the app:
+If you already have a container for DeployCheck, start that one instead of creating another (`docker ps -a` shows its name). For the command above, use `docker start deploycheck-postgres` on later runs.
 
-```bash
-cp .env.example .env
+```powershell
+Copy-Item .env.example .env
 npm install
-npm run db:migrate -- --name init
+npm run db:deploy
 npm run db:seed
 npm run db:status
 npm test
-npm run test:projects
-npm run test:releases
-npm run test:release-items
-npm run test:checklist
-npm run test:lifecycle
-npm run test:overview
 npm run dev
 ```
 
-On PowerShell, use `Copy-Item .env.example .env` instead of `cp` if preferred. Open <http://localhost:3000> for the overview. The seed is repeatable and leaves existing records unchanged. The six `test:*` smoke scripts need the local database; each creates and removes temporary records.
+Open <http://localhost:3000> or <http://localhost:3000/fr>. The seed is repeatable and leaves existing records unchanged. For database-backed smoke checks, run `npm run test:projects`, `test:releases`, `test:release-items`, `test:checklist`, `test:lifecycle`, and `test:overview` (each as a separate `npm run` command). They create and remove temporary records.
 
-If the page keeps loading and the terminal reports Prisma `ECONNREFUSED`, PostgreSQL is not reachable. Start Docker Desktop, run `docker start deploycheck-phase1-postgres` if the container is stopped, and check `docker exec deploycheck-phase1-postgres pg_isready -U postgres -d deploycheck`. Then reload the page. `npm run db:status` confirms the app's connection and migrations. After a computer restart, start Docker Desktop before opening the app; the container restart policy starts PostgreSQL with it.
+If Prisma reports `ECONNREFUSED`, start Docker Desktop and your database container, then check `docker exec deploycheck-postgres pg_isready -U postgres -d deploycheck` (substitute your existing container name if different) and `npm run db:status`. After a reboot, Docker Desktop must be running before the app can reach PostgreSQL.
 
-For development on another device using the computer's LAN address, put `DEV_ALLOWED_ORIGIN=192.168.1.10` (replace with your current LAN IP) in the ignored `.env.local` file and restart `npm run dev`. Use only the hostname or IP, without `http://` or a port. This opts that one origin into Next.js dev resources; `localhost` needs no setting. A `/fr` request returns 404 because the MVP has no French route. If a hydration warning names `data-extension-*` attributes on `<html>`, test with that browser extension disabled or in a clean browser profile; those attributes are not rendered by DeployCheck.
+To use the dev server from another device on your LAN, set `DEV_ALLOWED_ORIGIN` to your current LAN hostname or IP in ignored `.env.local`, then restart `npm run dev`. Do not include a scheme or port. If a hydration warning mentions `data-extension-*` attributes on `<html>`, try a clean browser profile; those attributes are added by a browser extension.
 
-To check Phase 6 manually, create a temporary release, start review, and confirm that **Mark ready** stays disabled until the blockers are resolved. Complete checks and the rollback plan, then move through Ready, Deploying, and Deployed with an outcome note. Confirm the status, deployed timestamp, and latest outcome. Record a rollback and confirm its latest outcome. A separate temporary release can exercise the Failed path. Direct jumps such as Draft to Deployed must be rejected by the server.
+Development and local production builds use separate ignored output directories (`.next-dev` and `.next-build`) to avoid generated-file conflicts on synced Windows workspaces. The dev command uses Webpack because the current Turbopack version can panic during hot reload; production builds still use the default bundler. Hosted runtime queries use `DATABASE_URL`; Prisma CLI commands use `DIRECT_URL` when provided. Apply committed migrations with `npm run db:deploy` in deployment environments. See the [deployment guide](docs/deployment.md) for hosting and read-only demo configuration.
 
-To check Phase 7 manually, open the overview and compare its counts with the release list and recent outcome rows. Open a release with deployment attempts, then follow **View all** to its filtered history. Switch outcome filters and visit a later page if there are more than 20 outcomes. Empty databases should offer a clear project/release starting point and show no invented deployment data.
+## Stack
 
-To check Phase 8 manually, open a ready release on a narrow screen: lifecycle actions should appear immediately after the readiness summary, with no horizontal scrolling. Submit an invalid project, release, ticket, or checklist form and confirm the field-level error is visible and announced. Navigate between pages on a slow connection to see loading feedback. If a database query fails, the page should offer **Retry** rather than a blank screen.
-
-For Phase 9, follow [docs/deployment.md](docs/deployment.md). Verify the production read-only state and the seeded overview after connecting the managed database. Local development remains writable.
-
-## Why this shape
-
-Next.js provides the UI and server entry points in one application. PostgreSQL fits the related projects, releases, tickets, checks, and deployment history. Prisma will make those relationships and migrations explicit. A small service/domain layer keeps readiness and status rules consistent across screens and future integrations without introducing a full enterprise architecture.
-
-## Next phase
-
-Phase 10 is portfolio preparation. Each phase stops for review before the next begins.
+Next.js App Router, React, TypeScript, Tailwind CSS, next-intl, PostgreSQL, Prisma, Zod, Lucide icons, ESLint, and Vitest.

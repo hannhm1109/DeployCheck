@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { localizeIssue, localizeMessage } from "@/i18n/action-messages";
+import { localePath, parseLocale, type AppLocale } from "@/i18n/routing";
 import {
   releaseItemSchema,
   type ReleaseItemFormState,
@@ -32,7 +34,7 @@ function readItemForm(formData: FormData): ReleaseItemFormValues {
   };
 }
 
-function validateItemForm(values: ReleaseItemFormValues) {
+function validateItemForm(values: ReleaseItemFormValues, locale: AppLocale) {
   const parsed = releaseItemSchema.safeParse(values);
   if (parsed.success) return { input: parsed.data };
 
@@ -41,24 +43,24 @@ function validateItemForm(values: ReleaseItemFormValues) {
     const field = issue.path[0];
     if (typeof field === "string" && field in values) {
       const key = field as keyof ReleaseItemFormValues;
-      errors[key] ??= issue.message;
+      errors[key] ??= localizeIssue(issue, locale);
     }
   }
   return { state: { values, errors } };
 }
 
-function knownErrorState(error: unknown, values: ReleaseItemFormValues): ReleaseItemFormState | null {
+function knownErrorState(error: unknown, values: ReleaseItemFormValues, locale: AppLocale): ReleaseItemFormState | null {
   if (error instanceof ReadOnlyDemoError) {
-    return { values, errors: {}, message: error.message };
+    return { values, errors: {}, message: localizeMessage(error.message, locale) };
   }
   if (error instanceof ReleaseItemReferenceTakenError) {
-    return { values, errors: { externalReference: error.message } };
+    return { values, errors: { externalReference: localizeMessage(error.message, locale) } };
   }
   if (error instanceof ReleaseItemNotFoundError || error instanceof ReleaseItemsLockedError) {
-    return { values, errors: {}, message: error.message };
+    return { values, errors: {}, message: localizeMessage(error.message, locale) };
   }
   if (error instanceof ReleaseWriteConflictError) {
-    return { values, errors: {}, message: error.message };
+    return { values, errors: {}, message: localizeMessage(error.message, locale) };
   }
   return null;
 }
@@ -68,20 +70,21 @@ export async function addReleaseItemAction(
   _previous: ReleaseItemFormState,
   formData: FormData,
 ): Promise<ReleaseItemFormState> {
+  const locale = parseLocale(formData.get("locale"));
   const values = readItemForm(formData);
-  const parsed = validateItemForm(values);
+  const parsed = validateItemForm(values, locale);
   if (parsed.state) return parsed.state;
 
   try {
     await addReleaseItem(releaseId, parsed.input!);
   } catch (error) {
-    const state = knownErrorState(error, values);
+    const state = knownErrorState(error, values, locale);
     if (state) return state;
     throw error;
   }
 
-  revalidatePath(`/releases/${releaseId}`);
-  redirect(`/releases/${releaseId}#tickets`);
+  revalidatePath(localePath(locale, `/releases/${releaseId}`));
+  redirect(localePath(locale, `/releases/${releaseId}#tickets`));
 }
 
 export async function editReleaseItemAction(
@@ -90,34 +93,37 @@ export async function editReleaseItemAction(
   _previous: ReleaseItemFormState,
   formData: FormData,
 ): Promise<ReleaseItemFormState> {
+  const locale = parseLocale(formData.get("locale"));
   const values = readItemForm(formData);
-  const parsed = validateItemForm(values);
+  const parsed = validateItemForm(values, locale);
   if (parsed.state) return parsed.state;
 
   try {
     await editReleaseItem(releaseId, itemId, parsed.input!);
   } catch (error) {
-    const state = knownErrorState(error, values);
+    const state = knownErrorState(error, values, locale);
     if (state) return state;
     throw error;
   }
 
-  revalidatePath(`/releases/${releaseId}`);
-  redirect(`/releases/${releaseId}#tickets`);
+  revalidatePath(localePath(locale, `/releases/${releaseId}`));
+  redirect(localePath(locale, `/releases/${releaseId}#tickets`));
 }
 
 export async function removeReleaseItemAction(
   releaseId: string,
   itemId: string,
+  localeInput: string = "en",
 ): Promise<{ error?: string }> {
+  const locale = parseLocale(localeInput);
   try {
     await removeReleaseItem(releaseId, itemId);
   } catch (error) {
     if (error instanceof ReadOnlyDemoError || error instanceof ReleaseItemNotFoundError || error instanceof ReleaseItemsLockedError || error instanceof ReleaseWriteConflictError) {
-      return { error: error.message };
+      return { error: localizeMessage(error.message, locale) };
     }
     throw error;
   }
-  revalidatePath(`/releases/${releaseId}`);
+  revalidatePath(localePath(locale, `/releases/${releaseId}`));
   return {};
 }
