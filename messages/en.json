@@ -14,7 +14,8 @@
     "signUpError": "Could not create the account. Check your details or use another email.",
     "needAccount": "New to DeployCheck?",
     "haveAccount": "Already have an account?",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "signOutError": "Could not sign out. Please try again."
   },
   "Workspace": {
     "createTitle": "Create workspace",
@@ -33,6 +34,7 @@
     "inviteHelp": "This link can be used once within seven days.",
     "copy": "Copy link",
     "copied": "Copied",
+    "copyFailed": "Could not copy automatically. Select and copy the full link from the field.",
     "switch": "Switch workspace",
     "joinTitle": "Join {name}",
     "join": "Join workspace",

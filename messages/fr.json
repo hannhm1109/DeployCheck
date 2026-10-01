@@ -14,7 +14,8 @@
     "signUpError": "Impossible de créer le compte. Vérifiez vos informations ou utilisez une autre adresse.",
     "needAccount": "Vous découvrez DeployCheck ?",
     "haveAccount": "Vous avez déjà un compte ?",
-    "signOut": "Se déconnecter"
+    "signOut": "Se déconnecter",
+    "signOutError": "Déconnexion impossible. Veuillez réessayer."
   },
   "Workspace": {
     "createTitle": "Créer un espace de travail",
@@ -33,6 +34,7 @@
     "inviteHelp": "Ce lien est utilisable une seule fois pendant sept jours.",
     "copy": "Copier le lien",
     "copied": "Copié",
+    "copyFailed": "Copie automatique impossible. Sélectionnez et copiez le lien complet dans le champ.",
     "switch": "Changer d'espace de travail",
     "joinTitle": "Rejoindre {name}",
     "join": "Rejoindre l'espace de travail",

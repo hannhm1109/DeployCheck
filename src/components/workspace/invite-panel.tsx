@@ -11,12 +11,18 @@ export function InvitePanel() {
   const t = useTranslations("Workspace");
   const locale = useLocale();
   const [state, action, pending] = useActionState(createInvitationAction, initialState);
-  const [copied, setCopied] = useState(false);
+  const [copyResult, setCopyResult] = useState<{ path: string; url: string; copied: boolean } | null>(null);
+  const currentCopy = copyResult?.path === state.path ? copyResult : null;
 
   async function copyLink() {
     if (!state.path) return;
-    await navigator.clipboard.writeText(new URL(state.path, window.location.origin).href);
-    setCopied(true);
+    const url = new URL(state.path, window.location.origin).href;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopyResult({ path: state.path, url, copied: true });
+    } catch {
+      setCopyResult({ path: state.path, url, copied: false });
+    }
   }
 
   return (
@@ -29,10 +35,11 @@ export function InvitePanel() {
       </form>
       {state.error && <p role="alert" className="mt-3 text-sm text-[#a23b33]">{state.error}</p>}
       {state.path && <div className="mt-4 flex max-w-xl items-center gap-2">
-        <input readOnly aria-label={t("invite")} value={state.path} className="h-10 min-w-0 flex-1 rounded-[5px] border border-[#cbd8cf] bg-white px-3 font-mono text-xs text-[#334d40]" />
+        <input readOnly aria-label={t("invite")} value={currentCopy?.url ?? state.path} onFocus={(event) => event.currentTarget.select()} className="h-10 min-w-0 flex-1 rounded-[5px] border border-[#cbd8cf] bg-white px-3 font-mono text-xs text-[#334d40]" />
         <button type="button" onClick={copyLink} title={t("copy")} aria-label={t("copy")} className="flex size-10 shrink-0 items-center justify-center rounded-[5px] border border-[#cbd8cf] bg-white text-[#0b7059] hover:bg-[#edf5f0]"><Copy size={16} /></button>
-        {copied && <span className="text-xs text-[#0b7059]">{t("copied")}</span>}
+        {currentCopy?.copied && <span className="text-xs text-[#0b7059]">{t("copied")}</span>}
       </div>}
+      {currentCopy && !currentCopy.copied && <p role="alert" className="mt-2 text-sm text-[#a23b33]">{t("copyFailed")}</p>}
     </section>
   );
 }
