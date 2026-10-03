@@ -1,0 +1,8 @@
+.env*
+.next
+.next-build
+.next-dev
+.next-dev-local
+.kilo
+node_modules
+supabase/.temp
