@@ -2,6 +2,10 @@
 
 DeployCheck is a release-readiness and deployment tracking app for small software teams. It keeps projects, releases, included tickets, deployment checks, rollback plans, and deployment outcomes in one place. Unlike a general issue tracker, it focuses on the decision to ship a specific release and on recording what happened afterward.
 
+## Live app
+
+Try DeployCheck at [deploycheck-ten.vercel.app](https://deploycheck-ten.vercel.app). Sign up to create your own workspace; project and release data stays private to its members. The hosted app runs on Vercel with a dedicated Supabase PostgreSQL database. The seeded example workspace is private, not a shared public account.
+
 ## What you can do
 
 - Create projects and versioned releases with target deployment dates.
